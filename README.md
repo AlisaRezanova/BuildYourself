@@ -1,5 +1,5 @@
 # BuildYourself (B.Y.)
 ## Блок-схема проекта
-![00ee784494ba195cd16efd2a8a4b5127.png](00ee784494ba195cd16efd2a8a4b5127.png)
+![7a4f3b6800d48fbed5011d8f0ac8bf82.png](7a4f3b6800d48fbed5011d8f0ac8bf82.png)
 ## Пример .env
 ...
