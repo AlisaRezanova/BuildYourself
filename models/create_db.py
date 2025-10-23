@@ -62,7 +62,7 @@ class Achievements(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    img: Mapped[str] = mapped_column(String(200), nullable=True)
+    img: Mapped[str] = mapped_column(String(250), nullable=True)
     description: Mapped[str] = mapped_column(String(200), nullable=True)
     log: Mapped[list['LogOfAch']] = relationship('LogOfAch', back_populates='achievement')
 
