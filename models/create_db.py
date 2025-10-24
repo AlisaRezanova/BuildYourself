@@ -19,8 +19,8 @@ class User(Base):
     date_of_reg: Mapped[date] = mapped_column(Date, nullable=False, default=date.today)
     num_friends: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     habit: Mapped[list["Habits"]] = relationship("Habits", back_populates='user')
-    fr1: Mapped[list['Friends']] = relationship('Friends', back_populates='user1')
-    fr2: Mapped[list['Friends']] = relationship('Friends', back_populates='user2')
+    fr1: Mapped[list['Friends']] = relationship('Friends', back_populates='user1', foreign_keys='Friends.fr1_id')
+    fr2: Mapped[list['Friends']] = relationship('Friends', back_populates='user2', foreign_keys='Friends.fr2_id')
     log: Mapped[list['LogOfAch']] = relationship('LogOfAch', back_populates='user')
 
 
@@ -53,8 +53,8 @@ class Friends(Base):
     fr2_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'), nullable=False)
     status: Mapped[str] = mapped_column(String(100), default='Waiting', nullable=False)
     start_friendship: Mapped[date] = mapped_column(Date)
-    user1: Mapped[list['User']] = relationship('User', back_populates='fr1')
-    user2: Mapped[list['User']] = relationship('User', back_populates='fr2')
+    user1: Mapped[list['User']] = relationship('User', back_populates='fr1', foreign_keys=[fr1_id])
+    user2: Mapped[list['User']] = relationship('User', back_populates='fr2', foreign_keys=[fr2_id])
 
 
 class Achievements(Base):
