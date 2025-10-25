@@ -21,7 +21,7 @@ async def get_right(callback_query: CallbackQuery, state: FSMContext):
     elif callback_query.data == "left":
         index = (index - 1) % len(habits)
 
-    await state.update_data(index=index)
+    await state.update_data(index=index, hab_id=habits[index].id)
 
     current_habit = habits[index]
     await callback_query.message.edit_text(current_habit.name, reply_markup=scroll_habit_kb())

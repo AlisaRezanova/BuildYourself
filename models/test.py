@@ -1,7 +1,9 @@
 import os
 from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import sessionmaker
-from models.create_db import User, Habits
+from models.create_db import User, Habits, LogOfHabits
+from datetime import date
+
 
 db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'buildyourself.db'))
 
@@ -50,4 +52,18 @@ def filling_habits():
         for habit in all_habits:
             print(habit.id, habit.user_id, habit.name)
 
-filling_habits()
+
+def filling_log_of_habits():
+    with Session() as session:
+        log1 = LogOfHabits(
+            habit_id=1,
+            date_of_mark=date(2025, 10, 22)
+        )
+        log2 = LogOfHabits(
+            habit_id=1,
+            date_of_mark=date(2025, 10, 24)
+        )
+        session.add_all([log1, log2])
+        session.commit()
+
+filling_log_of_habits()
