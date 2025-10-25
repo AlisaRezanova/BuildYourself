@@ -5,3 +5,5 @@
 ![img.png](img.png)
 ## Пример .env
 TOKEN='...'
+
+ADMIN='...'
