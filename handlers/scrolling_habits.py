@@ -1,5 +1,5 @@
 from aiogram import F, Dispatcher, Router
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from keyboards.scrolling_habits_kb import scroll_habit_kb
 from keyboards.statistic_kb import statistic_kb
