@@ -3,6 +3,7 @@ from aiogram.filters import Command
 from decouple import config
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
+from keyboards.admin_kb import admin_kb
 
 
 bot = Bot(token = config('TOKEN'))
@@ -16,4 +17,4 @@ ADMIN = [int(x) for x in config('ADMIN').split(',')]
 async def get_admin(message: Message):
     print(message.from_user.id)
     if message.from_user.id in ADMIN:
-        await message.answer('Надпись для админа')
+        await message.answer('Надпись для админа', reply_markup=admin_kb())
