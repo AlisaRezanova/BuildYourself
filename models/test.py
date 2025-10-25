@@ -1,8 +1,7 @@
 import os
 from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import sessionmaker
-from models.create_db import User
-
+from models.create_db import User, Habits
 
 db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'buildyourself.db'))
 
@@ -26,4 +25,29 @@ def show():
         current_user = session.query(User).filter(User.tg_id == 000).first()
         print(current_user)
 
-deeleetee()
+
+def filling_habits():
+    with Session() as session:
+        hab1 = Habits(
+            user_id = 1,
+            name = 'Бег по утрам'
+        )
+
+        hab2 = Habits(
+            user_id=1,
+            name='Бег по вечерам'
+        )
+
+        hab3 = Habits(
+            user_id=1,
+            name='Не есть сладкое'
+        )
+
+        session.add_all([hab1, hab2, hab3])
+        session.commit()
+
+        all_habits = session.query(Habits).all()
+        for habit in all_habits:
+            print(habit.id, habit.user_id, habit.name)
+
+filling_habits()

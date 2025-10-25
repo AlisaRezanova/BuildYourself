@@ -1,7 +1,5 @@
 from aiogram import F, Bot, Dispatcher, Router
 from aiogram.filters import Command
-from decouple import config
-from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from keyboards.start_kb import start_kb
 from keyboards.main_menu_kb import main_menu_kb
@@ -9,10 +7,8 @@ from models.session_local import Session
 from models.create_db import *
 
 
-bot = Bot(token = config('TOKEN'))
-dp = Dispatcher(storage=MemoryStorage())
-
 router = Router()
+
 
 @router.message(Command("start"))
 async def get_start(message: Message):
