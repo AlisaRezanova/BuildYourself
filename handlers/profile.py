@@ -1,12 +1,13 @@
 from aiogram import F, Dispatcher, Router
-from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, BufferedInputFile
+from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, BufferedInputFile, InputMediaPhoto
 from aiogram.fsm.context import FSMContext
 from keyboards.profile_kb import profile_kb
 from keyboards.statistic_kb import statistic_kb, get_stat_kb
-from models.requests_to_habits import get_all_habits_by_user_id, get_progress_by_week
+from models.requests_to_habits import get_all_habits_by_user_id
 from keyboards.add_habit_kb import add_habit_kb
 from keyboards.scrolling_habits_kb import scroll_habit_kb
 from keyboards.back_kb import back_kb
+from models.requests_to_log_habits import get_progress_by_week, get_progress_by_month, get_progress_by_half_year, get_progress_by_year
 
 
 router = Router()
@@ -41,21 +42,28 @@ async def get_all_habits(message: Message, state: FSMContext):
 @router.callback_query(F.data.startswith('Прогресс за'))
 async def get_stat_by_range(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    habit_id = data.get("hab_id")
+    habit_id = data.get('hab_id')
+    msg_id = data.get('msg_id')
     if callback_query.data == 'Прогресс за неделю':
         buf = get_progress_by_week(habit_id)
-        if buf is None:
-            await callback_query.message.answer("Нет данных по этой привычке.") #Добавить назад ко всем привычкам
-            return
-        photo = BufferedInputFile(buf.getvalue(), filename="progress.png")
-        await callback_query.message.answer_photo(photo)
-    elif callback_query.data == '':
-        ...
-    elif callback_query.data == '':
-        ...
-    elif callback_query.data == '':
-        ...
+    elif callback_query.data == 'Прогресс за месяц':
+        buf = get_progress_by_month(habit_id)
+    elif callback_query.data == 'Прогресс за полгода':
+        buf = get_progress_by_half_year(habit_id)
+    elif callback_query.data == 'Прогресс за год':
+        buf = get_progress_by_year(habit_id)
+    else:
+        raise ValueError('Нет графика(')
+    if buf is None:
+        await callback_query.message.answer('Нет данных по этой привычке.')  # Добавить назад ко всем привычкам
+        return
+    photo = BufferedInputFile(buf.getvalue(), filename='progress.png')
 
+    if msg_id:
+        await callback_query.bot.edit_message_media(chat_id=callback_query.message.chat.id, message_id=msg_id, media=InputMediaPhoto(media=photo))
+    else:
+        msg = await callback_query.message.answer_photo(photo)
+        await state.update_data(msg_id=msg.message_id)
 
 
 
