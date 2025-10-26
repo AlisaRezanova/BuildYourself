@@ -5,6 +5,7 @@ from .profile import router as profile_router
 from .scrolling_habits import router as scroll_habit_router
 from .main_menu import router as main_menu_router
 from .achievements import router as achievements_router
+from .friends import router as friends_router
 
 
 router = Router()
@@ -15,5 +16,6 @@ router.include_routers(
     profile_router,
     scroll_habit_router,
     main_menu_router,
-    achievements_router
+    achievements_router,
+    friends_router
 )

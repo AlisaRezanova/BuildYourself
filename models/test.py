@@ -1,7 +1,7 @@
 import os
 from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import sessionmaker
-from models.create_db import User, Habits, LogOfHabits, Achievements, LogOfAch
+from models.create_db import User, Habits, LogOfHabits, Achievements, LogOfAch, Friends
 from datetime import date
 
 
@@ -96,4 +96,17 @@ def filling_log_ach():
         session.add_all([log1, log2])
         session.commit()
 
-filling_log_ach()
+
+def filling_friends():
+    with Session() as session:
+        fr1 = Friends(
+            fr1_id = 1,
+            fr2_id = 2,
+            status = 'Approved',
+            start_friendship = date(2025, 10, 26)
+        )
+
+        session.add(fr1)
+        session.commit()
+
+filling_friends()
