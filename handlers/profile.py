@@ -25,6 +25,7 @@ async def get_statistic(message: Message):
 
 @router.message(F.text == 'Выбрать привычку')
 async def get_all_habits(message: Message, state: FSMContext):
+    await state.clear()
     habits = get_all_habits_by_user_id(message.from_user.id)
     temp_msg = await message.answer('...', reply_markup=back_kb())
     await temp_msg.delete()
@@ -34,7 +35,7 @@ async def get_all_habits(message: Message, state: FSMContext):
     if len(habits) == 1:
         await message.answer(habits[0].name, reply_markup=get_stat_kb())
     else:
-        await state.update_data(habits=habits, index=0, hab_id=habits[0].id)
+        await state.update_data(type="habits", habits=habits, index=0, key=habits[0].id)
         current_habit = habits[0]
         await message.answer(current_habit.name, reply_markup=scroll_habit_kb())
 
@@ -42,7 +43,7 @@ async def get_all_habits(message: Message, state: FSMContext):
 @router.callback_query(F.data.startswith('Прогресс за'))
 async def get_stat_by_range(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    habit_id = data.get('hab_id')
+    habit_id = data.get('key')
     msg_id = data.get('msg_id')
     if callback_query.data == 'Прогресс за неделю':
         buf = get_progress_by_week(habit_id)

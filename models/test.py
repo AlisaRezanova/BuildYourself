@@ -1,7 +1,7 @@
 import os
 from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import sessionmaker
-from models.create_db import User, Habits, LogOfHabits
+from models.create_db import User, Habits, LogOfHabits, Achievements, LogOfAch
 from datetime import date
 
 
@@ -66,4 +66,34 @@ def filling_log_of_habits():
         session.add_all([log1, log2])
         session.commit()
 
-filling_log_of_habits()
+
+def filling_ach():
+    with Session() as session:
+        ach1 = Achievements(
+            name='Первый пользователь',
+            description='Первый пользователь нашего ТГ бота!!!'
+        )
+        ach2 = Achievements(
+            name='Первооткрыватель',
+            description='Добавление своей первой привычки!!!'
+        )
+        session.add_all([ach1, ach2])
+        session.commit()
+        ach = session.query(Achievements).all()
+        print([i.name for i in ach])
+
+
+def filling_log_ach():
+    with Session() as session:
+        log1 = LogOfAch(
+            ach_id=1,
+            user_id=1
+        )
+        log2 = LogOfAch(
+            ach_id=2,
+            user_id=1
+        )
+        session.add_all([log1, log2])
+        session.commit()
+
+filling_log_ach()
