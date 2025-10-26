@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import sessionmaker
 from models.create_db import User, Habits, LogOfHabits, Achievements, LogOfAch, Friends
 from datetime import date
-
+import string, random
 
 db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'buildyourself.db'))
 
@@ -109,4 +109,10 @@ def filling_friends():
         session.add(fr1)
         session.commit()
 
-filling_friends()
+
+def generate_invite_code():
+    alf= ''.join(i for i in string.digits+string.ascii_letters)
+    code = ''.join(random.choice(alf) for _ in range(8))
+    print(code)
+
+generate_invite_code()
