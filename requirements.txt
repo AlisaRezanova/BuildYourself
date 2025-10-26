@@ -1,7 +1,7 @@
 sqlalchemy==2.0.43
 aiogram==3.22.0
 python-decouple==3.8
-matplotlib==3.10
+matplotlib==3.10.7
 pandas==2.3.3
 
 
