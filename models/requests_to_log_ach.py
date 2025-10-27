@@ -1,8 +1,10 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.create_db import Achievements, User, LogOfAch
-from models.exceptions import UserNotFoundError
+from models.create_db import Achievements, LogOfAch
+from models.exceptions import AchNotFoundError
+from models.requests_to_users import get_user_id_by_tg_id
+
 
 db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'buildyourself.db'))
 
@@ -12,17 +14,15 @@ Session = sessionmaker(bind=engine)
 
 def get_ach_by_user_id(tg_id: int) -> list:
     with Session() as session:
-        user_id = session.query(User).filter(User.tg_id==tg_id).first().id
-        if not user_id:
-            raise UserNotFoundError
+        user_id = get_user_id_by_tg_id(tg_id)
         achievements = session.query(LogOfAch).filter(LogOfAch.user_id==user_id).all()
         return achievements
 
 
-def get_ach_by_id(ach_id: int):
+def get_ach_by_id(ach_id: int) -> Achievements:
     with Session() as session:
         ach = session.query(Achievements).filter(Achievements.id==ach_id).first()
         if ach:
             return ach
         else:
-            raise ValueError('Achievement Not Found')
+            raise AchNotFoundError('Achievement Not Found')

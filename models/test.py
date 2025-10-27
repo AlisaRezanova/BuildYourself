@@ -115,4 +115,13 @@ def generate_invite_code():
     code = ''.join(random.choice(alf) for _ in range(8))
     print(code)
 
-generate_invite_code()
+
+def delete_friends():
+    with Session() as session:
+        stmt = (delete(Friends).where(Friends.id == 1))
+        session.execute(
+            stmt)
+        session.commit()
+
+
+delete_friends()

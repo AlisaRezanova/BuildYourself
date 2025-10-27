@@ -1,7 +1,8 @@
 from aiogram import F, Dispatcher, Router, Bot
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
-from models.requests_to_friends import get_tg_id_by_id
+from keyboards.requests_in_friends_kb import scroll_req_kb
+from models.requests_to_users import get_tg_id_by_id, get_user_id_by_tg_id
 from keyboards.scroll_friends_kb import scroll_friends_kb
 from keyboards.scrolling_habits_kb import scroll_habit_kb
 from keyboards.about_achievement_kb import scroll_ach_kb
@@ -30,6 +31,12 @@ async def get_left_right(callback_query: CallbackQuery, state: FSMContext):
         items = data.get("friends", [])
         kb_func = scroll_friends_kb
         msg = 'Нет друзей для отображения.'
+
+    elif type_scroll=='requests':
+        items = data.get("requests", [])
+        kb_func = scroll_req_kb()
+        msg = 'Нет запросов для отображения.'
+
     else:
         raise ValueError('Type Not Found')
 
@@ -50,12 +57,22 @@ async def get_left_right(callback_query: CallbackQuery, state: FSMContext):
     current_item = items[index]
     if type_scroll == 'achievements':
         current_item = get_ach_by_id(current_item.id)
-    if type_scroll == 'friends':
-        tg_id = get_tg_id_by_id(current_item.fr2_id)
+
+    if type_scroll == 'friends' or type_scroll == 'requests':
+        current_user_id = get_user_id_by_tg_id(callback_query.from_user.id)
+
+        if current_item.fr1_id == current_user_id:
+            friend_id = current_item.fr2_id
+        else:
+            friend_id = current_item.fr1_id
+
+        tg_id = get_tg_id_by_id(friend_id)
+
         user_chat = await bot.get_chat(tg_id)
         friend_name = user_chat.first_name
         await callback_query.message.edit_text(friend_name, reply_markup=kb_func())
         return
+
     await callback_query.message.edit_text(current_item.name, reply_markup=kb_func())
 
 
