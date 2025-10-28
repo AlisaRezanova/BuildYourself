@@ -133,5 +133,12 @@ def add_img():
         session.commit()
 
 
+def check_status():
+    with Session() as session:
+        fr = session.query(Friends).filter(Friends.id==1).first()
+        print(fr.status)
 
-add_img()
+
+
+
+check_status()

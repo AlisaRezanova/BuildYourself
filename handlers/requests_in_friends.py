@@ -21,7 +21,6 @@ async def get_friend_list_request(message: Message, state: FSMContext):
     temp_msg = await message.answer('...', reply_markup=back_kb())
 
     await temp_msg.delete()
-
     if not requests:
         await message.answer('Запросов пока нет')
         return
@@ -30,6 +29,7 @@ async def get_friend_list_request(message: Message, state: FSMContext):
         tg_id = get_tg_id_by_id(current_req.fr2_id)
         user_chat = await bot.get_chat(tg_id)
         friend_name = user_chat.first_name
+        await state.update_data(key=requests[0].id)
         await message.answer(friend_name, reply_markup=req_ac_rej())
     else:
         await state.update_data(type="requests", friends=requests, index=0, key=requests[0].id)
@@ -44,4 +44,4 @@ async def get_friend_list_request(message: Message, state: FSMContext):
 async def update_status(callback_query: CallbackQuery, state: FSMContext):
     req = await state.get_data()
     fr_id = req.get('key')
-    update_fr_status(callback_query.data, callback_query.from_user.id, fr_id)
+    update_fr_status(callback_query.data, fr_id)

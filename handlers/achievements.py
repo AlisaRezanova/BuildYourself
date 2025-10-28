@@ -1,8 +1,7 @@
 from aiogram import F, Dispatcher, Router
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, BufferedInputFile, InputMediaPhoto, FSInputFile
 from aiogram.fsm.context import FSMContext
-from keyboards.about_achievement_kb import about_achievement_kb, scroll_ach_kb, close_description_kb, close_description_kb
-from keyboards.scrolling_habits_kb import scroll_habit_kb
+from keyboards.about_achievement_kb import about_achievement_kb, scroll_ach_kb, close_description_kb
 from models.requests_to_ach import get_description_about_ach
 from models.requests_to_log_ach import get_ach_by_user_id, get_ach_by_id
 from keyboards.back_kb import back_kb

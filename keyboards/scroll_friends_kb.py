@@ -5,7 +5,8 @@ def scroll_friends_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text="<", callback_data="left"),
-            InlineKeyboardButton(text="Добавить друга", callback_data="add_friend"),
+            InlineKeyboardButton(text="Добавить еще новых друзей", callback_data="add_friend"),
+            InlineKeyboardButton(text="Удалить друга", callback_data="delete_friend"),
             InlineKeyboardButton(text=">", callback_data="right"),]
         ])
     return kb
@@ -14,6 +15,7 @@ def scroll_friends_kb():
 def add_friend_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="Добавить друга", callback_data="add_friend"),]
+            InlineKeyboardButton(text="Добавить еще новых друзей", callback_data="add_friend"),
+            InlineKeyboardButton(text="Удалить друга", callback_data="delete_friend"),]
     ])
     return kb
