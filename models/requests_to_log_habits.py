@@ -18,8 +18,6 @@ Session = sessionmaker(bind=engine)
 def get_progress_by_week(hab_id: int):
     with Session() as session:
         log_entries = session.query(LogOfHabits).filter_by(habit_id=hab_id).all()
-        if not log_entries:
-            raise LogNotFoundError("Нет данных по привычке")
         df = pd.DataFrame({
             'date': [entry.date_of_mark for entry in log_entries],
             'completed': 1
@@ -45,8 +43,6 @@ def get_progress_by_week(hab_id: int):
 def get_progress_by_month(hab_id: int):
     with Session() as session:
         log_entries = session.query(LogOfHabits).filter_by(habit_id=hab_id).all()
-        if not log_entries:
-            raise LogNotFoundError("Нет данных по привычке")
         df = pd.DataFrame({
             'date': [entry.date_of_mark for entry in log_entries],
             'completed': 1
@@ -72,8 +68,6 @@ def get_progress_by_month(hab_id: int):
 def get_progress_by_half_year(hab_id: int):
     with Session() as session:
         log_entries = session.query(LogOfHabits).filter_by(habit_id=hab_id).all()
-        if not log_entries:
-            raise LogNotFoundError("Нет данных по привычке")
         df = pd.DataFrame({
             'date': [entry.date_of_mark for entry in log_entries],
             'completed': 1
@@ -98,8 +92,6 @@ def get_progress_by_half_year(hab_id: int):
 def get_progress_by_year(hab_id: int):
     with Session() as session:
         log_entries = session.query(LogOfHabits).filter_by(habit_id=hab_id).all()
-        if not log_entries:
-            raise LogNotFoundError("Нет данных по привычке")
         df = pd.DataFrame({
             'date': [entry.date_of_mark for entry in log_entries],
             'completed': 1

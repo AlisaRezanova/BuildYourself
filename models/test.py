@@ -95,6 +95,8 @@ def filling_log_ach():
         )
         session.add_all([log1, log2])
         session.commit()
+        logs = session.query(LogOfHabits).all()
+        print([i.id for i in logs])
 
 
 def filling_friends():
@@ -124,4 +126,4 @@ def delete_friends():
         session.commit()
 
 
-delete_friends()
+filling_log_of_habits()

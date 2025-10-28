@@ -1,7 +1,11 @@
 from aiogram import F, Dispatcher, Router, Bot
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
+
+from handlers.class_state import HabitsState
+from keyboards.back_kb import back_kb
 from keyboards.requests_in_friends_kb import scroll_req_kb
+from models.requests_to_habits import get_habit_by_name, get_all_habits_by_user_id, get_index_habit
 from models.requests_to_users import get_tg_id_by_id
 from keyboards.scroll_friends_kb import scroll_friends_kb
 from keyboards.scrolling_habits_kb import scroll_habit_kb
@@ -69,5 +73,21 @@ async def get_left_right(callback_query: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data == 'search_habit')
-async def search_habit_by_name(message: Message, state: FSMContext):
-    ...
+async def search_habit_by_name(callback_query: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback_query.answer('Введите привычку', reply_markup=ReplyKeyboardRemove())
+    await state.set_state(HabitsState.waiting_for_input_state)
+
+
+@router.message(HabitsState.waiting_for_input_state)
+async def input_habit(message: Message, state: FSMContext):
+    await state.clear()
+    habit = get_habit_by_name(message.text, message.from_user.id)
+    if not habit:
+        await message.answer('Привычка не найдена, попробуйте ввести еще раз', reply_markup=back_kb())
+        await state.set_state(HabitsState.waiting_for_input_state)
+        return
+    habits = get_all_habits_by_user_id(message.from_user.id)
+    index = get_index_habit(habit, habits)
+    await state.update_data(type="habits", habits=habits, index=index, key=habit.id)
+    await message.answer(habit.name, reply_markup=scroll_habit_kb())

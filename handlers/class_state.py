@@ -7,3 +7,7 @@ class BackState(StatesGroup):
 
 class FriendsState(StatesGroup):
     waiting_for_invite_code = State()
+
+
+class HabitsState(StatesGroup):
+    waiting_for_input_state = State()
