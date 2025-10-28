@@ -42,7 +42,7 @@ async def get_more_about_ach(callback_query: CallbackQuery, state: FSMContext):
     img, description = get_description_about_ach(ach_id)
     if img is None:
         await callback_query.bot.edit_message_text(chat_id=callback_query.message.chat.id, message_id=msg_id, text=description,
-                                                    reply_markup=close_description())
+                                                    reply_markup=close_description_kb())
     else:
         photo = FSInputFile(img, filename='ach.png')
         await callback_query.bot.edit_message_media(chat_id=callback_query.message.chat.id, message_id=msg_id,
@@ -52,9 +52,8 @@ async def get_more_about_ach(callback_query: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == 'close')
 async def close_description(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    msg_id = data.get('msg_id')
     ach_id = data.get('key')
     current_ach = get_ach_by_id(ach_id)
-    await callback_query.bot.edit_message_text(chat_id=callback_query.message.chat.id, message_id=msg_id,
-                                               text=current_ach.name,
-                                               reply_markup=scroll_ach_kb())
+    await callback_query.message.delete()
+    msg = await callback_query.message.answer(text=current_ach.name, reply_markup=scroll_ach_kb())
+    await state.update_data(msg_id=msg.message_id)
