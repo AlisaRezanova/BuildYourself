@@ -126,4 +126,12 @@ def delete_friends():
         session.commit()
 
 
-filling_log_of_habits()
+def add_img():
+    with Session() as session:
+        ach = session.query(Achievements).filter(Achievements.id==1).first()
+        ach.img = 'img/for_achievements/12.png'
+        session.commit()
+
+
+
+add_img()

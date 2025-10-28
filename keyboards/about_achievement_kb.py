@@ -17,3 +17,11 @@ def about_achievement_kb():
             InlineKeyboardButton(text="Узнать больше", callback_data="more"),]
         ])
     return kb
+
+
+def close_description_kb():
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="Закрыть описание", callback_data="close"), ]
+    ])
+    return kb

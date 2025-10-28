@@ -23,6 +23,6 @@ def get_stat_kb():
 
 def search_habit_kb() -> ReplyKeyboardMarkup:
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Ввести привычку", callback_data="Ввести привычку")]
+        [InlineKeyboardButton(text="Ввести привычку", callback_data="search_habit")]
     ])
     return kb
