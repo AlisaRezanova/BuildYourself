@@ -7,6 +7,8 @@ from .main_menu import router as main_menu_router
 from .achievements import router as achievements_router
 from .friends import router as friends_router
 from .requests_in_friends import router as req_router
+from .requests import router as request_router
+from .requests_coop_habits import router as coop_router
 
 
 router = Router()
@@ -19,5 +21,7 @@ router.include_routers(
     main_menu_router,
     achievements_router,
     friends_router,
-    req_router
+    req_router,
+    request_router,
+    coop_router,
 )

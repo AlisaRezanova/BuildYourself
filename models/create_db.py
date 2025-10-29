@@ -34,6 +34,9 @@ class Habits(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     day_len: Mapped[int] = mapped_column(Integer, default=14, nullable=False)
     notification: Mapped[bool] = mapped_column(Boolean, default=1, nullable=False)
+    is_coop: Mapped[str] = mapped_column(String(3), nullable=False, default='no')
+
+    frhab: Mapped[list["FriendsHabits"]] = relationship("FriendsHabits", back_populates='habits')
 
 
 class LogOfHabits(Base):
@@ -54,8 +57,10 @@ class Friends(Base):
     fr2_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'), nullable=True)
     status: Mapped[str] = mapped_column(String(100), default='Waiting', nullable=False)
     start_friendship: Mapped[date] = mapped_column(Date, nullable=True)
+
     user1: Mapped[list['User']] = relationship('User', back_populates='fr1', foreign_keys=[fr1_id])
     user2: Mapped[list['User']] = relationship('User', back_populates='fr2', foreign_keys=[fr2_id])
+    frhab: Mapped[list['FriendsHabits']] = relationship('FriendsHabits', back_populates='friends')
 
 
 class Achievements(Base):
@@ -76,5 +81,19 @@ class LogOfAch(Base):
     achievement: Mapped[list['Achievements']] = relationship('Achievements', back_populates='log')
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'), nullable=False)
     user: Mapped[list['User']] = relationship('User', back_populates='log')
+
+
+class FriendsHabits(Base):
+    __tablename__ = 'friendshabits'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    friend_id: Mapped[int] = mapped_column(Integer, ForeignKey('friends.id'), nullable=False)
+    habit_id: Mapped[int] = mapped_column(Integer, ForeignKey('habits.id'), nullable=False)
+    status: Mapped[str] = mapped_column(String(25), nullable=False, default='waiting_habit')
+
+    friends: Mapped[list['Friends']] = relationship('Friends',  back_populates='frhab')
+    habits: Mapped[list['Habits']] = relationship('Habits', back_populates='frhab')
+
+
 
 Base.metadata.create_all(engine)

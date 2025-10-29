@@ -139,6 +139,9 @@ def check_status():
         print(fr.status)
 
 
+filling_habits()
+filling_ach()
+filling_log_ach()
+filling_log_of_habits()
 
-
-check_status()
+add_img()

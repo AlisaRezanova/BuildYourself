@@ -35,5 +35,13 @@ def get_index_habit(habit, habits):
     return 0
 
 
+def get_name_habit_by_id(habit_id: int) -> str:
+    with Session() as session:
+        habit = session.query(Habits).filter(Habits.id==habit_id).first()
+        if not habit:
+            raise ValueError('Error')
+        return habit.name
+
+
 
 

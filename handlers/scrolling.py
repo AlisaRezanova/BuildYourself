@@ -3,9 +3,11 @@ from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from handlers.class_state import HabitsState
 from keyboards.back_kb import back_kb
+from keyboards.requests_coop_habits_kb import scroll_req_hab_kb
 from keyboards.requests_in_friends_kb import scroll_req_kb
 from keyboards.statistic_kb import search_habit_kb
-from models.requests_to_habits import get_habit_by_name, get_all_habits_by_user_id, get_index_habit
+from models.requests_to_habits import get_habit_by_name, get_all_habits_by_user_id, get_index_habit, \
+    get_name_habit_by_id
 from models.requests_to_users import get_tg_id_by_id
 from keyboards.scroll_friends_kb import scroll_friends_kb
 from keyboards.scrolling_habits_kb import scroll_habit_kb
@@ -41,6 +43,11 @@ async def get_left_right(callback_query: CallbackQuery, state: FSMContext):
         kb_func = scroll_req_kb()
         msg = 'Нет запросов для отображения.'
 
+    elif type_scroll=='coop_habits':
+        items = data.get("coop_habits", [])
+        kb_func = scroll_req_hab_kb()
+        msg = 'Нет запросов для отображения.'
+
     else:
         raise ValueError('Type Not Found')
 
@@ -67,6 +74,11 @@ async def get_left_right(callback_query: CallbackQuery, state: FSMContext):
         user_chat = await bot.get_chat(tg_id)
         friend_name = user_chat.first_name
         await callback_query.message.edit_text(friend_name, reply_markup=kb_func())
+        return
+
+    if type_scroll=='coop_habits':
+        current_item_name = get_name_habit_by_id(current_item[0].id)
+        await callback_query.message.edit_text(current_item_name, reply_markup=kb_func())
         return
 
     await callback_query.message.edit_text(current_item.name, reply_markup=kb_func())
