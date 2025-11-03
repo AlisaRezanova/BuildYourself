@@ -1,8 +1,8 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.create_db import Habits
-from .requests_to_users import get_user_id_by_tg_id
+from models.create_db import Habits, User
+from models.requests_to_users import get_user_id_by_tg_id
 
 
 db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'buildyourself.db'))
@@ -42,6 +42,43 @@ def get_name_habit_by_id(habit_id: int) -> str:
             raise ValueError('Error')
         return habit.name
 
+def create_new_habit(tg_id: int, habit_name: str) -> int:
+    with Session() as session:
+        user = session.query(User).filter(User.tg_id == tg_id).first()
+        if not user:
+            raise ValueError('Error: User not found')
 
+        new_habit = Habits(
+            user_id = user.id,
+            name = habit_name,
+            day_len = 14,
+            notification = True,
+            is_coop = 'no'
+        )
 
+        session.add(new_habit)
+        session.commit()
+
+        return new_habit.id
+
+def get_habit_by_id(habit_id: int) -> Habits:
+    with Session() as session:
+        habit = session.query(Habits).filter(Habits.id == habit_id).first()
+        if not habit:
+            raise ValueError('Error: Habit not found')
+        return habit
+
+def update_habit_duration(habit_id: int, duration_days: int) -> None:
+    with Session() as session:
+        habit = session.query(Habits).filter(Habits.id == habit_id).first()
+        if habit:
+            habit.day_len = duration_days
+            session.commit()
+
+def update_habit_notification(habit_id: int, notification: bool) -> None:
+    with Session() as session:
+        habit = session.query(Habits).filter(Habits.id == habit_id).first()
+        if habit:
+            habit.notification = notification
+            session.commit()
 
