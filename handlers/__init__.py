@@ -10,6 +10,7 @@ from .requests_in_friends import router as req_router
 from .requests import router as request_router
 from .requests_coop_habits import router as coop_router
 from .create_habit import router as create_habit_router
+from .scrolling_habits import router as check_habit_router
 
 
 router = Router()
@@ -26,5 +27,6 @@ router.include_routers(
     request_router,
     coop_router,
     create_habit_router,
+    check_habit_router,
 
 )

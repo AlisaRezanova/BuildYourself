@@ -12,4 +12,6 @@ class FriendsState(StatesGroup):
 class HabitsState(StatesGroup):
     waiting_for_input_state = State()
 
+class HabitMarkDate(StatesGroup):
+    waiting_for_date = State()
 
