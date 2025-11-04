@@ -1,4 +1,6 @@
 import os
+from itertools import count
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.create_db import Habits, User
@@ -81,4 +83,14 @@ def update_habit_notification(habit_id: int, notification: bool) -> None:
         if habit:
             habit.notification = notification
             session.commit()
+
+
+def get_count_habit_by_id(user_id: int) -> int:
+    with Session() as session:
+        habits = session.query(Habits).filter(Habits.user_id==user_id).all()
+        return len(habits)
+
+
+
+
 

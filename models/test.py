@@ -139,9 +139,10 @@ def check_status():
         print(fr.status)
 
 
-filling_habits()
-filling_ach()
-filling_log_ach()
-filling_log_of_habits()
+def get_date_reg():
+    with Session() as session:
+        current_user = session.query(User).first()
+        print(current_user.date_of_reg)
 
-add_img()
+
+get_date_reg()

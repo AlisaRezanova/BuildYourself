@@ -18,3 +18,9 @@ def get_description_about_ach(ach_id: int):
         img = ach.img
         description = ach.description
         return img, description
+
+
+def get_all_ach() -> list:
+    with Session() as session:
+        ach = session.query(Achievements).all()
+        return ach

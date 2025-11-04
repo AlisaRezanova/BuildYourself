@@ -26,3 +26,9 @@ def get_ach_by_id(ach_id: int) -> Achievements:
             return ach
         else:
             raise AchNotFoundError('Achievement Not Found')
+
+
+def get_count_ach_by_id(user_id: int) -> int:
+    with Session() as session:
+        ach = session.query(LogOfAch).filter(LogOfAch.user_id==user_id).all()
+        return len(ach)
