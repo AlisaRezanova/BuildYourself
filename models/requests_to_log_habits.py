@@ -112,3 +112,29 @@ def get_progress_by_year(hab_id: int):
         buf.seek(0)
         plt.close()
         return buf
+
+def mark_habit_today(habit_id: int) -> None:
+    with Session() as session:
+        existing_mark = session.query(LogOfHabits).filter(LogOfHabits.habit_id == habit_id, LogOfHabits.date_of_mark == date.today()).first()
+        if existing_mark:
+            raise ValueError("Привычка уже отмечена за сегодня")
+
+        new_mark = LogOfHabits(habit_id=habit_id, date_of_mark=date.today())
+        session.add(new_mark)
+        session.commit()
+
+def mark_habit_by_date(habit_id: int, mark_date: date) -> None:
+    with Session() as session:
+        existing_mark = session.query(LogOfHabits).filter(LogOfHabits.habit_id == habit_id,
+                                                          LogOfHabits.date_of_mark == mark_date).first()
+        if existing_mark:
+            raise ValueError(f"Привычка уже отмечена за {mark_date}")
+
+        new_mark = LogOfHabits(habit_id=habit_id, date_of_mark=mark_date)
+        session.add(new_mark)
+        session.commit()
+
+def get_habits_marks(habit_id: int) -> list[LogOfHabits]:
+    with Session() as session:
+        marks = session.query(LogOfHabits).filter(LogOfHabits.habit_id == habit_id).all()
+        return marks
