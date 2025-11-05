@@ -2,7 +2,7 @@ from aiogram import F, Dispatcher, Router, Bot
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from handlers.class_state import HabitsState
-from keyboards.back_kb import back_kb
+from keyboards.admin_kb import scroll_users_kb
 from keyboards.requests_coop_habits_kb import scroll_req_hab_kb
 from keyboards.requests_in_friends_kb import scroll_req_kb
 from keyboards.statistic_kb import search_habit_kb
@@ -28,6 +28,7 @@ async def get_left_right(callback_query: CallbackQuery, state: FSMContext):
         items = data.get("habits", [])
         kb_func = scroll_habit_kb
         msg = 'Нет привычек для отображения.'
+
     elif type_scroll == 'achievements':
         items = data.get("achievements", [])
         kb_func = scroll_ach_kb
@@ -40,13 +41,18 @@ async def get_left_right(callback_query: CallbackQuery, state: FSMContext):
 
     elif type_scroll=='requests':
         items = data.get("requests", [])
-        kb_func = scroll_req_kb()
+        kb_func = scroll_req_kb
         msg = 'Нет запросов для отображения.'
 
     elif type_scroll=='coop_habits':
         items = data.get("coop_habits", [])
-        kb_func = scroll_req_hab_kb()
+        kb_func = scroll_req_hab_kb
         msg = 'Нет запросов для отображения.'
+
+    elif type_scroll=='users':
+        items = data.get("users", [])
+        kb_func = scroll_users_kb
+        msg = 'Нет пользователей для отображения.'
 
     else:
         raise ValueError('Type Not Found')
@@ -74,6 +80,14 @@ async def get_left_right(callback_query: CallbackQuery, state: FSMContext):
         user_chat = await bot.get_chat(tg_id)
         friend_name = user_chat.first_name
         await callback_query.message.edit_text(friend_name, reply_markup=kb_func())
+        return
+
+    if type_scroll == 'users':
+        user_chat = await bot.get_chat(current_item.tg_id)
+        user_name = user_chat.first_name
+        username = user_chat.username
+        description = f'Имя пользователя: {user_name} \nТГ-id пользователя: {current_item.tg_id}\nUsername: {username}'
+        await callback_query.message.edit_text(description, reply_markup=kb_func())
         return
 
     if type_scroll=='coop_habits':
