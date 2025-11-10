@@ -90,6 +90,11 @@ def get_count_habit_by_id(user_id: int) -> int:
         habits = session.query(Habits).filter(Habits.user_id==user_id).all()
         return len(habits)
 
+def get_habits_with_notifications() -> list:
+    with Session() as session:
+        habits = session.query(Habits).filter(Habits.notification == True).all()
+        return habits
+
 
 
 
