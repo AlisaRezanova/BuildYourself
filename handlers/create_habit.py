@@ -6,7 +6,7 @@ from keyboards.main_menu_kb import main_menu_kb
 from keyboards.duration_choice_kb import duration_choice_kb
 from keyboards.notification_need_kb import notification_choice_kb
 from models.requests_to_habits import create_new_habit, get_all_habits_by_user_id, update_habit_duration, update_habit_notification
-
+from handlers.earn_achievement import EarnAchievement
 router = Router()
 
 
@@ -36,9 +36,24 @@ async def process_habit_name(message: Message, state: FSMContext):
         return
 
     habit_id = create_new_habit(message.from_user.id, habit_name)
+    awarded_achievements = EarnAchievement.check_habit_achievements(message.from_user.id)
+
     await state.update_data(habit_id=habit_id, habit_name=habit_name)
     await state.set_state(HabitStates.waiting_for_duration_choice)
     await message.answer(f'Привычка "{habit_name}" успешно создана!')
+    for achievement_id in awarded_achievements:
+        achievement = EarnAchievement.get_achievement_by_id(achievement_id)
+        achievement_image = EarnAchievement.get_achievement_image(achievement)
+
+        if achievement_image:
+            await message.answer_photo(
+                achievement_image,
+                caption=f'🎉 Вы получили награду "{achievement.name}"!\n📝 {achievement.description}'
+            )
+        else:
+            await message.answer(f'🎉 Вы получили награду "{achievement.name}"!')
+            await message.answer(f'📝 {achievement.description}')
+
     await message.answer('Выберите длительность привычки:', reply_markup=duration_choice_kb())
 
 @router.message(StateFilter(HabitStates.waiting_for_duration_choice), F.text.in_(['1 неделя', '2 месяца', '6 месяцев', '1 год']))

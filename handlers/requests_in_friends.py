@@ -6,6 +6,7 @@ from models.requests_to_friends import get_all_requests, update_fr_status
 from models.requests_to_users import get_tg_id_by_id
 from keyboards.back_kb import back_kb
 from decouple import config
+from handlers.earn_achievement import EarnAchievement
 
 
 bot = Bot(token = config('TOKEN'))
@@ -45,3 +46,20 @@ async def update_status(callback_query: CallbackQuery, state: FSMContext):
     req = await state.get_data()
     fr_id = req.get('key')
     update_fr_status(callback_query.data, fr_id)
+
+    if callback_query.data == 'accept':
+        awarded_achievements = EarnAchievement.check_friend_achievement(callback_query.from_user.id)
+        for achievement_id in awarded_achievements:
+            achievement = EarnAchievement.get_achievement_by_id(achievement_id)
+            achievement_image = EarnAchievement.get_achievement_image(achievement)
+
+            if achievement_image:
+                await callback_query.message.answer_photo(
+                    achievement_image,
+                    caption=f'🎉 Вы получили награду "{achievement.name}"!\n📝 {achievement.description}'
+                )
+
+            else:
+                await callback_query.message.answer(f'🎉 Вы получили награду "{achievement.name}"!')
+                await callback_query.message.answer(f'📝 {achievement.description}')
+    await callback_query.answer('Запрос обработан')

@@ -145,4 +145,18 @@ def get_date_reg():
         print(current_user.date_of_reg)
 
 
-get_date_reg()
+def delete_specific_habits():
+
+    habit_ids_to_delete = [9]
+
+    with Session() as session:
+        session.query(LogOfHabits).filter(LogOfHabits.habit_id.in_(habit_ids_to_delete)).delete()
+        deleted_count = session.query(Habits).filter(Habits.id.in_(habit_ids_to_delete)).delete()
+        session.commit()
+
+        print(f" Удалено {deleted_count} привычек с ID: {habit_ids_to_delete}")
+
+def clean_logofach():
+    with Session() as session:
+        deleted_count = session.query(LogOfAch).delete()
+        session.commit()

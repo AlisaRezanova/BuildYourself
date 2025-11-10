@@ -8,6 +8,7 @@ from keyboards.scrolling_all_habits_kb import scroll_all_habits_kb
 from keyboards.main_menu_kb import main_menu_kb
 from handlers.class_state import HabitMarkDate
 from datetime import date, datetime
+from handlers.earn_achievement import EarnAchievement
 
 
 router = Router()
@@ -62,7 +63,23 @@ async def mark_today_handler(callback_query: CallbackQuery, state: FSMContext):
     current_habit = habits[index]
 
     mark_habit_today(habit_id)
+
+    awarded_achievements = EarnAchievement.check_mark_achievements(callback_query.from_user.id, habit_id)
+    for achievement_id in awarded_achievements:
+        achievement = EarnAchievement.get_achievement_by_id(achievement_id)
+        achievement_image = EarnAchievement.get_achievement_image(achievement)
+
+        if achievement_image:
+            await callback_query.message.answer_photo(
+                achievement_image,
+                caption=f'🎉 Вы получили награду "{achievement.name}"!\n📝 {achievement.description}'
+            )
+        else:
+            await callback_query.message.answer(f'🎉 Вы получили награду "{achievement.name}"!')
+            await callback_query.message.answer(f'📝 {achievement.description}')
+
     await callback_query.answer(f'Привычка "{current_habit.name}" отмечена за сегодня!')
+
 
 
 @router.callback_query(F.data == "mark_date")
@@ -101,6 +118,21 @@ async def process_date_input(message: Message, state: FSMContext):
 
 
         mark_habit_by_date(habit_id, input_date)
+
+        awarded_achievements = EarnAchievement.check_mark_achievements(message.from_user.id, habit_id)
+
+        for achievement_id in awarded_achievements:
+            achievement = EarnAchievement.get_achievement_by_id(achievement_id)
+            achievement_image = EarnAchievement.get_achievement_image(achievement)
+
+            if achievement_image:
+                await message.answer_photo(
+                    achievement_image,
+                    caption=f'🎉 Вы получили награду "{achievement.name}"!\n📝 {achievement.description}'
+                )
+            else:
+                await message.answer(f'🎉 Вы получили награду "{achievement.name}"!')
+                await message.answer(f'📝 {achievement.description}')
 
         await message.answer(
             f' Привычка "{habit_name}" отмечена за {input_date.strftime("%d.%m.%Y")}!',
