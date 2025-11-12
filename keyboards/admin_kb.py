@@ -14,6 +14,7 @@ def admin_kb() -> ReplyKeyboardMarkup:
 def admin_user_kb() -> ReplyKeyboardMarkup:
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Информация", callback_data="Информация")],
+        [InlineKeyboardButton(text="Назад", callback_data="back_admin")],
         [InlineKeyboardButton(text="Удалить пользователя", callback_data="delete_user")]
     ])
     return kb
@@ -31,6 +32,7 @@ def scroll_users_kb() -> ReplyKeyboardMarkup:
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="<", callback_data="left"),
         InlineKeyboardButton(text="Информация", callback_data="Информация"),
+        InlineKeyboardButton(text="Назад", callback_data="back_admin"),
         InlineKeyboardButton(text="Удалить пользователя", callback_data="delete_user"),
         InlineKeyboardButton(text=">", callback_data="right"), ]
     ])
@@ -42,4 +44,24 @@ def get_more_information_about_user() -> ReplyKeyboardMarkup:
         [InlineKeyboardButton(text="Краткая информация", callback_data="close_info"),
         InlineKeyboardButton(text="Удалить пользователя", callback_data="delete_user"), ]
     ])
+    return kb
+
+
+def scroll_ach_in_admin_kb() -> ReplyKeyboardMarkup:
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="<", callback_data="left"),
+            InlineKeyboardButton(text="Узнать больше", callback_data="more"),
+            InlineKeyboardButton(text="Назад", callback_data="back_admin"),
+            InlineKeyboardButton(text=">", callback_data="right"),]
+        ])
+    return kb
+
+
+def ach_in_admin_kb() -> ReplyKeyboardMarkup:
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="Узнать больше", callback_data="more"),
+            InlineKeyboardButton(text="Назад", callback_data="back_admin"),]
+        ])
     return kb

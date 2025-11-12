@@ -6,7 +6,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 
 from keyboards.about_achievement_kb import about_achievement_kb, scroll_ach_kb
-from keyboards.admin_kb import admin_kb, admin_back_kb, admin_user_kb, scroll_users_kb, get_more_information_about_user
+from keyboards.admin_kb import admin_kb, admin_back_kb, admin_user_kb, scroll_users_kb, get_more_information_about_user, \
+    scroll_ach_in_admin_kb, ach_in_admin_kb
 from models.requests_to_ach import get_all_ach
 from models.requests_to_users import get_all_users_to_admin, get_tg_id_by_id, get_more_information_about_user_by_id, \
     delete_user_by_id, get_count_new_users_by_week, get_count_new_users_by_month, get_count_new_users_by_year
@@ -29,12 +30,9 @@ async def get_admin(message: Message):
 async def get_all_users(callback_query: CallbackQuery, state: FSMContext):
     await state.clear()
     users = get_all_users_to_admin()
-    temp_msg = await callback_query.message.answer('...', reply_markup=admin_back_kb())
-
-    await temp_msg.delete()
 
     if not users:
-        await callback_query.message.answer('Пользователей пока нет')
+        await callback_query.message.edit_text(text='Пользователей пока нет')
         return
 
     if len(users) == 1:
@@ -45,7 +43,7 @@ async def get_all_users(callback_query: CallbackQuery, state: FSMContext):
         await state.update_data(key=users[0].id)
         username = user_chat.username
         description = f'Имя пользователя: {user_name} \nТГ-id пользователя: {tg_id}\nUsername: {username}'
-        msg = await callback_query.message.answer(description, reply_markup=admin_user_kb())
+        msg = await callback_query.message.edit_text(text=description, reply_markup=admin_user_kb())
         await state.update_data(msg_id=msg.message_id)
     else:
         await state.update_data(type="users", users=users, index=0, key=users[0].id)
@@ -55,7 +53,7 @@ async def get_all_users(callback_query: CallbackQuery, state: FSMContext):
         user_name = user_chat.first_name
         username = user_chat.username
         description = f'Имя пользователя: {user_name} \nТГ-id пользователя: {tg_id}\nUsername: {username}'
-        msg = await callback_query.message.answer(description, reply_markup=scroll_users_kb())
+        msg = await callback_query.message.edit_text(text=description, reply_markup=scroll_users_kb())
         await state.update_data(msg_id=msg.message_id)
 
 
@@ -77,8 +75,7 @@ async def close_description(callback_query: CallbackQuery, state: FSMContext):
     tg_id = current_user.tg_id
     user_chat = await bot.get_chat(tg_id)
     user_name = user_chat.first_name
-    await callback_query.message.delete()
-    msg = await callback_query.message.answer(text=user_name, reply_markup=scroll_users_kb())
+    msg = await callback_query.message.edit_text(text=user_name, reply_markup=scroll_users_kb())
     await state.update_data(msg_id=msg.message_id)
 
 
@@ -104,19 +101,16 @@ async def get_all_achievements(callback_query: CallbackQuery, state: FSMContext)
     await state.clear()
     achievements = get_all_ach()
 
-    temp_msg = await callback_query.message.answer('...', reply_markup=admin_back_kb())
-    await temp_msg.delete()
-
     if not achievements:
-        await callback_query.message.answer('Достижений пока нет')
+        await callback_query.message.edit_text(text='Достижений пока нет')
         return
     if len(achievements) == 1:
         current_ach = achievements[0]
-        await callback_query.message.answer(current_ach.name, reply_markup=about_achievement_kb())
+        await callback_query.message.edit_text(text=current_ach.name, reply_markup=ach_in_admin_kb())
     else:
-        await state.update_data(type="achievements", achievements=achievements, index=0, key=achievements[0].id)
+        await state.update_data(type="achievements", achievements=achievements, index=0, key=achievements[0].id, is_admin=True)
         current_ach = achievements[0]
-        msg = await callback_query.message.answer(current_ach.name, reply_markup=scroll_ach_kb())
+        msg = await callback_query.message.edit_text(text=current_ach.name, reply_markup=scroll_ach_in_admin_kb())
         await state.update_data(msg_id = msg.message_id)
 
 
@@ -128,4 +122,9 @@ async def get_all_achievements(callback_query: CallbackQuery, state: FSMContext)
     new_year_users = get_count_new_users_by_year()
     users_count = len(get_all_users_to_admin())
     description = f'Общее количество пользователей: {users_count}\nКоличество новых пользователь за неделю: {new_week_users}\nКоличество новых пользователей за месяц: {new_month_users}\nКоличество новых пользователей за год: {new_year_users}'
-    await callback_query.message.answer(description, reply_markup=admin_back_kb())
+    await callback_query.message.edit_text(text=description, reply_markup=admin_kb())
+
+
+@router.callback_query(F.data == 'back_admin')
+async def get_back_admin(callback_query: CallbackQuery):
+    await callback_query.message.edit_text(text='Панель для админа', reply_markup=admin_kb())

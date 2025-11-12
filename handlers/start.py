@@ -24,14 +24,14 @@ async def get_start(message: Message):
 async def handle_man(message: Message):
     with Session() as session:
         new_user = User(
-            sex='M',
+            gender='M',
             tg_id=message.from_user.id,
         )
         session.add(new_user)
         session.commit()
         all_users = session.query(User).all()
         for user in all_users:
-            print(user.id, user.sex, user.tg_id, user.date_of_reg, user.num_friends)
+            print(user.id, user.gender, user.tg_id, user.date_of_reg, user.num_friends)
     await message.answer('Главное меню', reply_markup=main_menu_kb())
 
 
@@ -39,12 +39,12 @@ async def handle_man(message: Message):
 async def handle_man(message: Message):
     with Session() as session:
         new_user = User(
-            sex='F',
+            gender='F',
             tg_id=message.from_user.id,
         )
         session.add(new_user)
         session.commit()
         all_users = session.query(User).all()
         for user in all_users:
-            print(user.id, user.sex, user.tg_id, user.date_of_reg, user.num_friends)
+            print(user.id, user.gender, user.tg_id, user.date_of_reg, user.num_friends)
     await message.answer('Главное меню', reply_markup=main_menu_kb())
