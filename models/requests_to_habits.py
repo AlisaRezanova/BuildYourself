@@ -45,7 +45,7 @@ def get_name_habit_by_id(habit_id: int) -> str:
             raise ValueError('Error')
         return habit.name
 
-def create_new_habit(tg_id: int, habit_name: str) -> int:
+def create_new_habit(tg_id: int, habit_name: str, duration_days: int = 14, notification: bool = True) -> int:
     with Session() as session:
         user = session.query(User).filter(User.tg_id == tg_id).first()
         if not user:
@@ -54,8 +54,8 @@ def create_new_habit(tg_id: int, habit_name: str) -> int:
         new_habit = Habits(
             user_id = user.id,
             name = habit_name,
-            day_len = 14,
-            notification = True,
+            day_len = duration_days,
+            notification = notification,
             is_coop = 'no'
         )
 

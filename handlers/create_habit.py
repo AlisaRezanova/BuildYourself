@@ -5,6 +5,7 @@ from aiogram.filters import StateFilter
 from keyboards.main_menu_kb import main_menu_kb
 from keyboards.duration_choice_kb import duration_choice_kb
 from keyboards.notification_need_kb import notification_choice_kb
+from keyboards.confirm_habit_kb import confirm_habit_kb
 from models.requests_to_habits import create_new_habit, get_all_habits_by_user_id, update_habit_duration, update_habit_notification
 from handlers.earn_achievement import EarnAchievement
 router = Router()
@@ -14,11 +15,11 @@ class HabitStates:
     waiting_for_habit_name = "waiting_for_habit_name"
     waiting_for_duration_choice = "waiting_for_duration_choice"
     waiting_for_notification_choice = "waiting_for_notification_choice"
+    waiting_for_confirmation = "waiting_for_confirmation"
 
 @router.message(F.text == 'Создание новой привычки')
 async def create_new_habit_handler(message: Message, state: FSMContext):
     await state.clear()
-
     await state.set_state(HabitStates.waiting_for_habit_name)
     await message.answer('Введите название привычки:', reply_markup=ReplyKeyboardRemove())
 
@@ -35,26 +36,17 @@ async def process_habit_name(message: Message, state: FSMContext):
         await message.answer('Название привычки слишком длинное (максимум 100 символов)')
         return
 
-    habit_id = create_new_habit(message.from_user.id, habit_name)
-    awarded_achievements = EarnAchievement.check_habit_achievements(message.from_user.id)
+    await state.update_data(habit_name=habit_name)
 
-    await state.update_data(habit_id=habit_id, habit_name=habit_name)
-    await state.set_state(HabitStates.waiting_for_duration_choice)
-    await message.answer(f'Привычка "{habit_name}" успешно создана!')
-    for achievement_id in awarded_achievements:
-        achievement = EarnAchievement.get_achievement_by_id(achievement_id)
-        achievement_image = EarnAchievement.get_achievement_image(achievement)
-
-        if achievement_image:
-            await message.answer_photo(
-                achievement_image,
-                caption=f'🎉 Вы получили награду "{achievement.name}"!\n📝 {achievement.description}'
-            )
-        else:
-            await message.answer(f'🎉 Вы получили награду "{achievement.name}"!')
-            await message.answer(f'📝 {achievement.description}')
-
-    await message.answer('Выберите длительность привычки:', reply_markup=duration_choice_kb())
+    data = await state.get_data()
+    if data.get('duration_text') and data.get('notification_text'):
+        await show_summary(message, state, data)
+    elif data.get('duration_text'):
+        await state.set_state(HabitStates.waiting_for_notification_choice)
+        await message.answer('Нужны ли уведомления?', reply_markup=notification_choice_kb())
+    else:
+        await state.set_state(HabitStates.waiting_for_duration_choice)
+        await message.answer('Выберите длительность привычки:', reply_markup=duration_choice_kb())
 
 @router.message(StateFilter(HabitStates.waiting_for_duration_choice), F.text.in_(['1 неделя', '2 месяца', '6 месяцев', '1 год']))
 async def process_duration_choice(message: Message, state: FSMContext):
@@ -70,12 +62,15 @@ async def process_duration_choice(message: Message, state: FSMContext):
     }
 
     duration_days = duration_map[message.text]
-    update_habit_duration(habit_id, duration_days)
 
     await state.update_data(duration_days=duration_days, duration_text=message.text)
-    await state.set_state(HabitStates.waiting_for_notification_choice)
-    await message.answer(f'Длительность привычки установлена: {message.text}')
-    await message.answer('Нужны ли уведомления?', reply_markup=notification_choice_kb())
+    data = await state.get_data()
+    if data.get('notification_text'):
+        await show_summary(message, state, data)
+    else:
+        await state.set_state(HabitStates.waiting_for_notification_choice)
+        await message.answer(f'Длительность привычки установлена: {message.text}')
+        await message.answer('Нужны ли уведомления?', reply_markup=notification_choice_kb())
 
 @router.message(StateFilter(HabitStates.waiting_for_notification_choice), F.text.in_(['Уведомления нужны', 'Уведомления не нужны']))
 async def process_notification_choice(message: Message, state: FSMContext):
@@ -88,8 +83,69 @@ async def process_notification_choice(message: Message, state: FSMContext):
     update_habit_notification(habit_id, notification)
 
     notification_text = 'включены' if notification else 'выключены'
-    await message.answer(f'Уведомления {notification_text}')
-    await message.answer(
-        f'Привычка "{habit_name}" успешно создана!\nДлительность: {duration_text}\nУведомления: {notification_text}',
-        reply_markup=main_menu_kb())
-    await state.clear()
+    await state.update_data(
+        notification=notification,
+        notification_text=notification_text
+    )
+
+    data = await state.get_data()
+    await show_summary(message, state, data)
+
+@router.message(StateFilter(HabitStates.waiting_for_confirmation))
+async def process_confirmation(message: Message, state: FSMContext):
+    data = await state.get_data()
+
+    if message.text == "Все правильно":
+
+        habit_id = create_new_habit(
+            message.from_user.id,
+            data.get('habit_name'),
+            data.get('duration_days'),
+            data.get('notification')
+        )
+
+        awarded_achievements = EarnAchievement.check_habit_achievements(message.from_user.id)
+
+        for achievement_id in awarded_achievements:
+            achievement = EarnAchievement.get_achievement_by_id(achievement_id)
+            achievement_image = EarnAchievement.get_achievement_image(achievement)
+
+            if achievement_image:
+                await message.answer_photo(
+                    achievement_image,
+                    caption=f'🎉 Вы получили награду "{achievement.name}"!\n📝 {achievement.description}'
+                )
+            else:
+                await message.answer(f'🎉 Вы получили награду "{achievement.name}"!')
+                await message.answer(f'{achievement.description}')
+
+        await message.answer(
+            f"Привычка \"{data.get('habit_name')}\" успешно создана!",
+            reply_markup=main_menu_kb()
+        )
+        await state.clear()
+
+    elif message.text == "Изменить название":
+        await state.set_state(HabitStates.waiting_for_habit_name)
+        await message.answer("Введите новое название привычки:", reply_markup=ReplyKeyboardRemove())
+
+    elif message.text == "Изменить длительность":
+        await state.set_state(HabitStates.waiting_for_duration_choice)
+        await message.answer("Выберите длительность привычки:", reply_markup=duration_choice_kb())
+
+    elif message.text == "Изменить статус уведомлений":
+        await state.set_state(HabitStates.waiting_for_notification_choice)
+        await message.answer("Нужны ли уведомления?", reply_markup=notification_choice_kb())
+
+
+async def show_summary(message: Message, state: FSMContext, data: dict):
+    summary_message = (
+        f"Проверьте информацию о привычке:\n\n"
+        f"Название: {data.get('habit_name')}\n"
+        f"Длительность: {data.get('duration_text')}\n"
+        f"Уведомления: {data.get('notification_text')}\n\n"
+        f"Всё правильно?"
+    )
+
+    await message.answer(summary_message, reply_markup=confirm_habit_kb())
+    await state.set_state(HabitStates.waiting_for_confirmation)
