@@ -1,10 +1,11 @@
 import os
 from itertools import count
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.create_db import Habits, User
+from models.requests_to_log_habits import get_first_mark_date
 from models.requests_to_users import get_user_id_by_tg_id
+from datetime import datetime, timedelta
 
 
 db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'buildyourself.db'))
@@ -95,7 +96,24 @@ def get_habits_with_notifications() -> list:
         habits = session.query(Habits).filter(Habits.notification == True).all()
         return habits
 
+def get_expired_habits() -> list:
+    with Session() as session:
+        now = datetime.now()
+        habits = session.query(Habits).all()
+        expired_habits = []
 
+        for habit in habits:
+            first_mark_date = get_first_mark_date(habit.id)
 
+            if first_mark_date:
+                end_date = first_mark_date + timedelta (days=habit.day_len)
+                if now >= end_date:
+                    expired_habits.append(habit)
 
+        return expired_habits
+
+def get_all_habits() -> list:
+    with Session() as session:
+        habits = session.query(Habits).all()
+        return habits
 

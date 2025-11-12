@@ -1,11 +1,11 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.create_db import LogOfHabits
+from models.create_db import LogOfHabits, Habits
 from .exceptions import LogNotFoundError
 import matplotlib.pyplot as plt
 import pandas as pd
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from io import BytesIO
 
 
@@ -138,3 +138,26 @@ def get_habits_marks(habit_id: int) -> list[LogOfHabits]:
     with Session() as session:
         marks = session.query(LogOfHabits).filter(LogOfHabits.habit_id == habit_id).all()
         return marks
+
+
+def get_first_mark_date(habit_id: int) -> datetime:
+    with Session() as session:
+        first_mark = session.query(LogOfHabits).filter(
+            LogOfHabits.habit_id == habit_id
+        ).order_by(LogOfHabits.date_of_mark.asc()).first()
+
+        if first_mark:
+            return datetime.combine(first_mark.date_of_mark, datetime.min.time())
+        return None
+
+def get_habit_marks_count(habit_id: int) -> int:
+    with Session() as session:
+        count = session.query(LogOfHabits).filter(LogOfHabits.habit_id == habit_id).count()
+        return count
+
+def delete_habit(habit_id: int):
+    with Session() as session:
+        session.query(LogOfHabits).filter(LogOfHabits.habit_id == habit_id).delete()
+        session.query(Habits).filter(Habits.id == habit_id).delete()
+        session.commit()
+
