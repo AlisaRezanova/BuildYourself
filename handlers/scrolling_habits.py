@@ -58,7 +58,7 @@ async def scroll_all_habits(callback_query: CallbackQuery, state: FSMContext):
 async def mark_today_handler(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     habit_id = data.get('key')
-    habits = data.get('habits')
+    habits = data.get('habits', [])
     index = data.get('index', 0)
     current_habit = habits[index]
 
