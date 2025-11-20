@@ -39,6 +39,7 @@ class Habits(Base):
     frhab: Mapped[list["FriendsHabits"]] = relationship("FriendsHabits", back_populates='habits')
 
 
+
 class LogOfHabits(Base):
     __tablename__ = 'logofhabits'
 
