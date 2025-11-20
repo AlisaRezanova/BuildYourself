@@ -2,7 +2,7 @@ from aiogram import F, Dispatcher, Router, Bot
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from handlers.class_state import HabitsState
-from keyboards.admin_kb import scroll_users_kb
+from keyboards.admin_kb import scroll_users_kb, scroll_ach_in_admin_kb
 from keyboards.requests_coop_habits_kb import scroll_req_hab_kb
 from keyboards.requests_in_friends_kb import scroll_req_kb
 from keyboards.statistic_kb import search_habit_kb
@@ -33,6 +33,10 @@ async def get_left_right(callback_query: CallbackQuery, state: FSMContext):
         items = data.get("achievements", [])
         kb_func = scroll_ach_kb
         msg = 'Нет достижений для отображения.'
+        is_admin = False
+        if data.get('is_admin'):
+            is_admin = True
+            kb_func = scroll_ach_in_admin_kb
 
     elif type_scroll=='friends':
         items = data.get("friends", [])

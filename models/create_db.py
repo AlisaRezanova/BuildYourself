@@ -14,7 +14,7 @@ class User(Base):
     __tablename__ = 'user'
 
     id: Mapped[int] =  mapped_column(Integer, primary_key=True)
-    sex: Mapped[str] = mapped_column(String(2), nullable=False)
+    gender: Mapped[str] = mapped_column(String(2), nullable=False)
     tg_id: Mapped[int] = mapped_column(Integer, nullable=False)
     date_of_reg: Mapped[date] = mapped_column(Date, nullable=False, default=date.today)
     num_friends: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -37,6 +37,7 @@ class Habits(Base):
     is_coop: Mapped[str] = mapped_column(String(3), nullable=False, default='no')
 
     frhab: Mapped[list["FriendsHabits"]] = relationship("FriendsHabits", back_populates='habits')
+
 
 
 class LogOfHabits(Base):
