@@ -1,7 +1,9 @@
 import os
+from aiogram import Bot
+from decouple import config
 from sqlalchemy import create_engine, or_, and_, delete
 from sqlalchemy.orm import sessionmaker
-from models.create_db import Friends
+from models.create_db import Friends, User
 from models.exceptions import FriendsNotAdded, FriendsNotFoundError
 from datetime import date
 from models.requests_to_users import get_user_id_by_tg_id
@@ -89,6 +91,79 @@ def delete_friend_by_id(fr_id: int):
         except:
             raise ValueError('Error')
 
+
+
+async def get_friend_name_by_tg_id(tg_id):
+    try:
+        bot = Bot(token=config('TOKEN'))
+        user_chat = await bot.get_chat(tg_id)
+        await bot.session.close()
+
+        if user_chat.first_name:
+            if user_chat.last_name:
+                return f"{user_chat.first_name} {user_chat.last_name}"
+            return user_chat.first_name
+        elif user_chat.username:
+            return f"@{user_chat.username}"
+        else:
+            return f"User_{tg_id}"
+
+    except Exception as e:
+        print(f"Error getting friend name: {e}")
+        return f"User_{tg_id}"
+
+
+async def get_friends_list_with_names(user_tg_id):
+    session = Session()
+    try:
+
+        user = session.query(User).filter(User.tg_id == user_tg_id).first()
+        if not user:
+            return []
+
+        friends_as_fr1 = session.query(Friends).filter(
+            Friends.fr1_id == user.id,
+            Friends.status == 'accepted'
+        ).all()
+
+        friends_as_fr2 = session.query(Friends).filter(
+            Friends.fr2_id == user.id,
+            Friends.status == 'accepted'
+        ).all()
+
+        friends_list = []
+
+
+        for friend in friends_as_fr1:
+            friend_user = session.query(User).filter(User.id == friend.fr2_id).first()
+            if friend_user:
+                friend_name = await get_friend_name_by_tg_id(friend_user.tg_id)
+                friends_list.append({
+                    'id': friend.id,
+                    'user_id': friend_user.id,
+                    'tg_id': friend_user.tg_id,
+                    'name': friend_name
+                })
+
+
+        for friend in friends_as_fr2:
+            friend_user = session.query(User).filter(User.id == friend.fr1_id).first()
+            if friend_user:
+                friend_name = await get_friend_name_by_tg_id(friend_user.tg_id)
+                friends_list.append({
+                    'id': friend.id,
+                    'user_id': friend_user.id,
+                    'tg_id': friend_user.tg_id,
+                    'name': friend_name
+                })
+
+        return friends_list
+
+    except Exception as e:
+        print(f"Error getting friends list: {e}")
+        return []
+    finally:
+        session.close()
 
 
 

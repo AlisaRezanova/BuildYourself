@@ -30,3 +30,20 @@ def update_status_coop_habit(habit_id: int, new_status: str) -> bool:
         except Exception as e:
             raise ValueError(e)
 
+def create_coop_habit_invite(habit_id, friendship_id):
+    session = Session()
+    try:
+        coop_habit = FriendsHabits(
+            habit_id=habit_id,
+            friend_id=friendship_id,
+            status='waiting_habit'
+        )
+        session.add(coop_habit)
+        session.commit()
+        return coop_habit.id
+    except Exception as e:
+        session.rollback()
+        print(f"Error creating coop habit invite: {e}")
+        raise e
+    finally:
+        session.close()

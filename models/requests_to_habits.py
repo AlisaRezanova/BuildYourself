@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from models.create_db import Habits, User
 from models.requests_to_log_habits import get_first_mark_date
 from models.requests_to_users import get_user_id_by_tg_id
+from models.requests_to_friendshabits import create_coop_habit_invite
 from datetime import datetime, timedelta
 
 
@@ -45,7 +46,7 @@ def get_name_habit_by_id(habit_id: int) -> str:
             raise ValueError('Error')
         return habit.name
 
-def create_new_habit(tg_id: int, habit_name: str, duration_days: int = 14, notification: bool = True) -> int:
+def create_new_habit(tg_id: int, habit_name: str, duration_days: int = 14, notification: bool = True, habit_type='ordinary', friendship_id=None) -> int:
     with Session() as session:
         user = session.query(User).filter(User.tg_id == tg_id).first()
         if not user:
@@ -56,11 +57,14 @@ def create_new_habit(tg_id: int, habit_name: str, duration_days: int = 14, notif
             name = habit_name,
             day_len = duration_days,
             notification = notification,
-            is_coop = 'no'
+            is_coop='yes' if habit_type == 'cooperative' else 'no'
         )
 
         session.add(new_habit)
         session.commit()
+
+        if habit_type == 'cooperative' and friendship_id:
+            create_coop_habit_invite(new_habit.id, friendship_id)
 
         return new_habit.id
 

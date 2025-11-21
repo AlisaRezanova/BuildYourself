@@ -24,6 +24,7 @@ async def select_habit_handler(message: Message, state: FSMContext):
 
     if len(habits) == 1:
         await message.answer(habits[0].name, reply_markup=scroll_all_habits_kb())
+        await state.update_data(type = "habit_selection", habits = habits, index = 0, key = habits[0].id)
     else:
         await state.update_data(type = "habit_selection", habits = habits, index = 0, key = habits[0].id)
         current_habit = habits[0]
@@ -60,6 +61,11 @@ async def mark_today_handler(callback_query: CallbackQuery, state: FSMContext):
     habit_id = data.get('key')
     habits = data.get('habits', [])
     index = data.get('index', 0)
+
+    if not habits or index >= len(habits):
+        await callback_query.answer('Ошибка: привычка не найдена')
+        return
+
     current_habit = habits[index]
 
     mark_habit_today(habit_id)
@@ -88,6 +94,11 @@ async def mark_date_handler(callback_query: CallbackQuery, state: FSMContext):
     habit_id = data.get('key')
     habits = data.get('habits', [])
     index = data.get('index', 0)
+
+    if not habits or index >= len(habits):
+        await callback_query.answer('Ошибка: привычка не найдена')
+        return
+
     current_habit = habits[index]
 
     await state.update_data(

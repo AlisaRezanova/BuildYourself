@@ -1,18 +1,24 @@
 from aiogram import F, Router
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import StateFilter
 from keyboards.main_menu_kb import main_menu_kb
 from keyboards.duration_choice_kb import duration_choice_kb
 from keyboards.notification_need_kb import notification_choice_kb
 from keyboards.confirm_habit_kb import confirm_habit_kb
+from keyboards.habit_type_kb import habit_type_kb
+from keyboards.friends_choice_kb import friends_choice_kb
 from models.requests_to_habits import create_new_habit, get_all_habits_by_user_id, update_habit_duration, update_habit_notification
+from models.requests_to_friends import get_friends_list_with_names
+from models.requests_to_friendshabits import create_coop_habit_invite
 from handlers.earn_achievement import EarnAchievement
 router = Router()
 
 
 class HabitStates:
     waiting_for_habit_name = "waiting_for_habit_name"
+    waiting_for_habit_type = "waiting_for_habit_type"
+    waiting_for_friend_choice = "waiting_for_friend_choice"
     waiting_for_duration_choice = "waiting_for_duration_choice"
     waiting_for_notification_choice = "waiting_for_notification_choice"
     waiting_for_confirmation = "waiting_for_confirmation"
@@ -45,8 +51,72 @@ async def process_habit_name(message: Message, state: FSMContext):
         await state.set_state(HabitStates.waiting_for_notification_choice)
         await message.answer('Нужны ли уведомления?', reply_markup=notification_choice_kb())
     else:
+        await state.set_state(HabitStates.waiting_for_habit_type)
+        await message.answer('Выберите тип привычки:', reply_markup=habit_type_kb())
+
+
+@router.message(StateFilter(HabitStates.waiting_for_habit_type))
+async def process_habit_type(message: Message, state: FSMContext):
+    if message.text not in ["Обычная привычка", "Совместная привычка"]:
+        await message.answer('Пожалуйста, выберите тип привычки из предложенных вариантов')
+        return
+
+    data = await state.get_data()
+
+    if message.text == "Обычная привычка":
+        await state.update_data(habit_type="ordinary", friend_id=None, friend_name=None)
         await state.set_state(HabitStates.waiting_for_duration_choice)
         await message.answer('Выберите длительность привычки:', reply_markup=duration_choice_kb())
+
+    else:
+        friends = await get_friends_list_with_names(message.from_user.id)
+        if not friends:
+            await message.answer('У вас пока нет друзей для создания совместной привычки. Сначала добавьте друзей!',
+                                 reply_markup=main_menu_kb())
+            await state.clear()
+            return
+
+        await state.update_data(habit_type="cooperative", friends_list=friends)
+        await state.set_state(HabitStates.waiting_for_friend_choice)
+        await message.answer('Выберите друга для совместной привычки:', reply_markup=friends_choice_kb(friends))
+
+
+@router.callback_query(StateFilter(HabitStates.waiting_for_friend_choice), F.data.startswith('friend_'))
+async def process_friend_choice(callback_query: CallbackQuery, state: FSMContext):
+    friend_id = int(callback_query.data.split('_')[1])
+
+    data = await state.get_data()
+    friends_list = data.get('friends_list', [])
+
+    # Находим выбранного друга
+    selected_friend = next((f for f in friends_list if f['id'] == friend_id), None)
+
+    if not selected_friend:
+        await callback_query.answer('Друг не найден')
+        return
+
+    await state.update_data(
+        friend_id=friend_id,
+        friend_name=selected_friend['name']
+    )
+
+    await callback_query.message.edit_text(f'Выбран друг: {selected_friend["name"]}')
+
+    data = await state.get_data()
+    if data.get('duration_text') and data.get('notification_text'):
+        await show_summary(callback_query.message, state, data)
+    elif data.get('duration_text'):
+        await state.set_state(HabitStates.waiting_for_notification_choice)
+        await callback_query.message.answer('Нужны ли уведомления?', reply_markup=notification_choice_kb())
+    else:
+        await state.set_state(HabitStates.waiting_for_duration_choice)
+        await callback_query.message.answer('Выберите длительность привычки:', reply_markup=duration_choice_kb())
+
+@router.callback_query(StateFilter(HabitStates.waiting_for_friend_choice), F.data == 'cancel_coop')
+async def cancel_coop_habit(callback_query: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback_query.message.edit_text('Создание совместной привычки отменено')
+    await callback_query.message.answer('Главное меню:', reply_markup=main_menu_kb())
 
 @router.message(StateFilter(HabitStates.waiting_for_duration_choice), F.text.in_(['1 неделя', '2 месяца', '6 месяцев', '1 год']))
 async def process_duration_choice(message: Message, state: FSMContext):
@@ -101,8 +171,23 @@ async def process_confirmation(message: Message, state: FSMContext):
             message.from_user.id,
             data.get('habit_name'),
             data.get('duration_days'),
-            data.get('notification')
+            data.get('notification'),
+            data.get('habit_type'),
+            data.get('friend_id')
         )
+
+        if data.get('habit_type') == 'cooperative' and data.get('friend_id'):
+            create_coop_habit_invite(habit_id, data.get('friend_id'))
+
+            await message.answer(
+                f"✅ Приглашение на совместную привычку отправлено {data.get('friend_name')}!",
+                reply_markup=main_menu_kb()
+            )
+        else:
+            await message.answer(
+                f"Привычка \"{data.get('habit_name')}\" успешно создана!",
+                reply_markup=main_menu_kb()
+            )
 
         awarded_achievements = EarnAchievement.check_habit_achievements(message.from_user.id)
 
@@ -139,9 +224,18 @@ async def process_confirmation(message: Message, state: FSMContext):
 
 
 async def show_summary(message: Message, state: FSMContext, data: dict):
+    habit_type = data.get('habit_type', 'ordinary')
+
+    if habit_type == 'ordinary':
+        type_text = "Обычная привычка"
+    else:
+        friend_name = data.get('friend_name')
+        type_text = f"Совместная с {friend_name}"
+
     summary_message = (
         f"Проверьте информацию о привычке:\n\n"
         f"Название: {data.get('habit_name')}\n"
+        f"Тип: {type_text}\n"
         f"Длительность: {data.get('duration_text')}\n"
         f"Уведомления: {data.get('notification_text')}\n\n"
         f"Всё правильно?"
