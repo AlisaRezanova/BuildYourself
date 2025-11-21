@@ -1,11 +1,15 @@
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.types import InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-def scroll_all_habits_kb() -> InlineKeyboardMarkup:
-    kb = InlineKeyboardBuilder()
-    kb.button(text='⬅️', callback_data='habit_left')
-    kb.button(text='➡️', callback_data='habit_right')
-    kb.button(text=' Отметиться за сегодня', callback_data='mark_today')
-    kb.button(text='Отметиться за определенное число', callback_data='mark_date')
-    kb.adjust(2, 2)
-    return kb.as_markup()
+
+def scroll_all_habits_kb(is_coop=False):
+    buttons = [
+        [InlineKeyboardButton(text="⬅️", callback_data="habit_left"),
+         InlineKeyboardButton(text="➡️", callback_data="habit_right")],
+        [InlineKeyboardButton(text="Отметиться за сегодня", callback_data="mark_today")],
+        [InlineKeyboardButton(text="Отметиться за определенное число", callback_data="mark_date")]
+    ]
+
+    if is_coop:
+        buttons.append([InlineKeyboardButton(text="Прогресс с другом", callback_data="coop_progress")])
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)

@@ -123,12 +123,12 @@ async def get_friends_list_with_names(user_tg_id):
 
         friends_as_fr1 = session.query(Friends).filter(
             Friends.fr1_id == user.id,
-            Friends.status == 'accepted'
+            Friends.status == 'accept'
         ).all()
 
         friends_as_fr2 = session.query(Friends).filter(
             Friends.fr2_id == user.id,
-            Friends.status == 'accepted'
+            Friends.status == 'accept'
         ).all()
 
         friends_list = []
@@ -165,7 +165,10 @@ async def get_friends_list_with_names(user_tg_id):
     finally:
         session.close()
 
-
+def get_friendship_by_id(friendship_id):
+    with Session() as session:
+        friendship = session.query(Friends).filter(Friends.id == friendship_id).first()
+        return friendship
 
 
 

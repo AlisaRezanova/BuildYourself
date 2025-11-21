@@ -11,6 +11,7 @@ from .requests import router as request_router
 from .requests_coop_habits import router as coop_router
 from .create_habit import router as create_habit_router
 from .scrolling_habits import router as check_habit_router
+from .coop_habit_invites import router as coop_habit_invites_router
 
 
 router = Router()
@@ -28,5 +29,6 @@ router.include_routers(
     coop_router,
     create_habit_router,
     check_habit_router,
+    coop_habit_invites_router
 
 )

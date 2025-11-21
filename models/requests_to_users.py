@@ -83,4 +83,7 @@ def get_count_new_users_by_year() -> int:
         return len(users)
 
 
-
+def get_user_by_id(user_id):
+    with Session() as session:
+        user = session.query(User).filter(User.id == user_id).first()
+        return user

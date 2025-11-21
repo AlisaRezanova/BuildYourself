@@ -9,6 +9,8 @@ from keyboards.main_menu_kb import main_menu_kb
 from handlers.class_state import HabitMarkDate
 from datetime import date, datetime
 from handlers.earn_achievement import EarnAchievement
+from models.requests_to_friendshabits import get_coop_progress
+from keyboards.scrolling_all_habits_kb import scroll_all_habits_kb
 
 
 router = Router()
@@ -23,12 +25,14 @@ async def select_habit_handler(message: Message, state: FSMContext):
         return
 
     if len(habits) == 1:
-        await message.answer(habits[0].name, reply_markup=scroll_all_habits_kb())
+        is_coop = habits[0].is_coop == 'yes'
+        await message.answer(habits[0].name, reply_markup=scroll_all_habits_kb(is_coop=is_coop))
         await state.update_data(type = "habit_selection", habits = habits, index = 0, key = habits[0].id)
     else:
+        is_coop = habits[0].is_coop == 'yes'
         await state.update_data(type = "habit_selection", habits = habits, index = 0, key = habits[0].id)
         current_habit = habits[0]
-        await message.answer(current_habit.name, reply_markup = scroll_all_habits_kb())
+        await message.answer(current_habit.name, reply_markup = scroll_all_habits_kb(is_coop=is_coop))
 
 @router.callback_query(F.data.in_(['habit_left', 'habit_right']))
 async def scroll_all_habits(callback_query: CallbackQuery, state: FSMContext):
@@ -53,7 +57,33 @@ async def scroll_all_habits(callback_query: CallbackQuery, state: FSMContext):
     await state.update_data(index=index, key=habits[index].id)
     current_habit = habits[index]
 
-    await callback_query.message.edit_text(current_habit.name, reply_markup=scroll_all_habits_kb())
+    is_coop = current_habit.is_coop == 'yes'
+
+    await callback_query.message.edit_text(current_habit.name, reply_markup=scroll_all_habits_kb(is_coop=is_coop))
+
+
+@router.callback_query(F.data == "coop_progress")
+async def show_coop_progress(callback_query: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    habit_id = data.get('key')
+
+    progress_info = get_coop_progress(habit_id, callback_query.from_user.id)
+
+    if not progress_info:
+        await callback_query.answer('Информация о совместном прогрессе недоступна')
+        return
+
+    progress_message = (
+        f"Совместный прогресс: {progress_info['habit_name']}\n\n"
+        f"Вы: {progress_info['user_progress_bar']} {progress_info['user_days']}/{progress_info['duration']} дней\n"
+        f"{progress_info['friend_name']}: {progress_info['friend_progress_bar']} {progress_info['friend_days']}/{progress_info['duration']} дней\n\n"
+        f"Общий прогресс: {progress_info['total_days']}/{progress_info['total_duration']} дней\n"
+        f"До конца челленджа: {progress_info['days_remaining']} дней "
+    )
+
+    await callback_query.message.answer(progress_message)
+    await callback_query.answer()
+
 
 @router.callback_query(F.data == "mark_today")
 async def mark_today_handler(callback_query: CallbackQuery, state: FSMContext):
