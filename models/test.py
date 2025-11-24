@@ -147,7 +147,7 @@ def get_date_reg():
 
 def delete_specific_habits():
 
-    habit_ids_to_delete = [9]
+    habit_ids_to_delete = [2]
 
     with Session() as session:
         session.query(LogOfHabits).filter(LogOfHabits.habit_id.in_(habit_ids_to_delete)).delete()
@@ -160,3 +160,4 @@ def clean_logofach():
     with Session() as session:
         deleted_count = session.query(LogOfAch).delete()
         session.commit()
+
