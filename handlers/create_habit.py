@@ -12,6 +12,8 @@ from models.requests_to_habits import create_new_habit, get_all_habits_by_user_i
 from models.requests_to_friends import get_friends_list_with_names
 from models.requests_to_friendshabits import create_coop_habit_invite
 from handlers.earn_achievement import EarnAchievement
+from models.requests_to_users import get_user_id_by_tg_id
+
 router = Router()
 
 
@@ -96,6 +98,8 @@ async def process_friend_choice(callback_query: CallbackQuery, state: FSMContext
         return
 
     await state.update_data(
+        my_id=get_user_id_by_tg_id(callback_query.from_user.id),
+        receiver_id=selected_friend['tg_id'],
         friend_id=friend_id,
         friend_name=selected_friend['name']
     )
@@ -167,8 +171,11 @@ async def process_confirmation(message: Message, state: FSMContext):
 
     if message.text == "Все правильно":
 
+
         habit_id = create_new_habit(
             message.from_user.id,
+            data.get('my_id'),
+            get_user_id_by_tg_id(data.get('receiver_id')),
             data.get('habit_name'),
             data.get('duration_days'),
             data.get('notification'),
@@ -177,7 +184,8 @@ async def process_confirmation(message: Message, state: FSMContext):
         )
 
         if data.get('habit_type') == 'cooperative' and data.get('friend_id'):
-            create_coop_habit_invite(habit_id, data.get('friend_id'))
+            rec_id = get_user_id_by_tg_id(data.get('receiver_id'))
+            create_coop_habit_invite(habit_id, data.get('friend_id'), rec_id, data.get('my_id'))
 
             await message.answer(
                 f"✅ Приглашение на совместную привычку отправлено {data.get('friend_name')}!",

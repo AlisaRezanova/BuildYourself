@@ -25,8 +25,8 @@ async def get_my_achievements(message: Message, state: FSMContext):
     if len(achievements) == 1:
         current_ach = achievements[0]
         current_ach = get_ach_by_id(current_ach.id)
-        await message.answer(current_ach.name, reply_markup=about_achievement_kb())
-        await state.update_data(msg_id=msg.message_id)
+        msg = await message.answer(current_ach.name, reply_markup=about_achievement_kb())
+        await state.update_data(msg_id=msg.message_id, key=achievements[0].id)
     else:
         await state.update_data(type="achievements", achievements=achievements, index=0, key=achievements[0].id)
         current_ach = achievements[0]

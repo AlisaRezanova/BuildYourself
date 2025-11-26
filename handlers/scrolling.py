@@ -8,7 +8,7 @@ from keyboards.requests_in_friends_kb import scroll_req_kb
 from keyboards.statistic_kb import search_habit_kb
 from models.requests_to_habits import get_habit_by_name, get_all_habits_by_user_id, get_index_habit, \
     get_name_habit_by_id
-from models.requests_to_users import get_tg_id_by_id
+from models.requests_to_users import get_tg_id_by_id, get_user_id_by_tg_id
 from keyboards.scroll_friends_kb import scroll_friends_kb
 from keyboards.scrolling_habits_kb import scroll_habit_kb
 from keyboards.about_achievement_kb import scroll_ach_kb
@@ -80,7 +80,15 @@ async def get_left_right(callback_query: CallbackQuery, state: FSMContext):
         current_item = get_ach_by_id(current_item.id)
 
     if type_scroll == 'friends' or type_scroll == 'requests':
-        tg_id = get_tg_id_by_id(current_item.fr2_id)
+        current_user_id = get_user_id_by_tg_id(callback_query.from_user.id)
+        if current_item.fr1_id == current_user_id:
+            friend_id = current_item.fr2_id
+        else:
+            friend_id = current_item.fr1_id
+
+
+
+        tg_id = get_tg_id_by_id(friend_id)
         user_chat = await bot.get_chat(tg_id)
         friend_name = user_chat.first_name
         await callback_query.message.edit_text(friend_name, reply_markup=kb_func())
@@ -95,7 +103,9 @@ async def get_left_right(callback_query: CallbackQuery, state: FSMContext):
         return
 
     if type_scroll=='coop_habits':
-        current_item_name = get_name_habit_by_id(current_item[0].id)
+        current_item_name = get_name_habit_by_id(current_item.habit_id)
+        #current_item_name = get_name_habit_by_id(current_item[0].id)
+        print(current_item.habit_id)
         await callback_query.message.edit_text(current_item_name, reply_markup=kb_func())
         return
 

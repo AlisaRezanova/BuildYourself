@@ -23,7 +23,9 @@ async def get_all_req_habits(message: Message, state: FSMContext):
         return
     await state.update_data(type="coop_habits", friends=coop_habits, index=0, key=coop_habits[0].id)
     current_coop_habit_name = get_name_habit_by_id(coop_habits[0].id)
+    print(current_coop_habit_name)
     if len(coop_habits) == 1:
+
         await message.answer(current_coop_habit_name, reply_markup=req_hab_kb())
     else:
         await message.answer(current_coop_habit_name, reply_markup=scroll_req_hab_kb())

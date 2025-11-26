@@ -14,6 +14,7 @@ Session = sessionmaker(bind=engine)
 
 def get_user_id_by_tg_id(tg_id: int) -> int:
     with Session() as session:
+        print(tg_id)
         user = session.query(User).filter(User.tg_id == tg_id).first()
         if not user:
             raise UserNotFoundError

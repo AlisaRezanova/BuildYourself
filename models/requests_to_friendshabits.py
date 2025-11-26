@@ -13,10 +13,13 @@ Session = sessionmaker(bind=engine)
 
 
 def get_all_requests_in_habits(tg_id: int):
+    user_id = get_user_id_by_tg_id(tg_id)
+    print(user_id)
     friends = get_all_friends_by_user_id(tg_id)
     friends_id = [fr.id for fr in friends]
     with Session() as session:
-        list_coop_habits = session.query(FriendsHabits).filter(FriendsHabits.friend_id.in_(friends_id)).filter(FriendsHabits.status=='waiting_habit').all()
+        list_coop_habits = session.query(FriendsHabits).filter(FriendsHabits.friend_id.in_(friends_id)).filter(FriendsHabits.status=='waiting_habit', FriendsHabits.receiver_id==user_id).all()
+        print([x.habit_id for x in list_coop_habits])
         return list_coop_habits
 
 
@@ -30,11 +33,13 @@ def update_status_coop_habit(habit_id: int, new_status: str) -> bool:
         except Exception as e:
             raise ValueError(e)
 
-def create_coop_habit_invite(habit_id, friendship_id):
+def create_coop_habit_invite(habit_id, friendship_id, receiver_id: int, sender_id: int):
     with Session() as session:
         coop_habit = FriendsHabits(
             habit_id=habit_id,
             friend_id=friendship_id,
+            receiver_id=receiver_id,
+            sender_id=sender_id,
             status='waiting_habit'
         )
         session.add(coop_habit)

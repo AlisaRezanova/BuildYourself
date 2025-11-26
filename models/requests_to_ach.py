@@ -14,6 +14,7 @@ Session = sessionmaker(bind=engine)
 
 def get_description_about_ach(ach_id: int):
     with Session() as session:
+        print(ach_id)
         ach = session.query(Achievements).filter(Achievements.id == ach_id).first()
         img = ach.img
         description = ach.description
