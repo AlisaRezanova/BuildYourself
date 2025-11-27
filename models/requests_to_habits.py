@@ -65,7 +65,7 @@ def create_new_habit(tg_id: int,  sender_id, receiver_id, habit_name: str, durat
         session.commit()
 
         if habit_type == 'cooperative' and friendship_id:
-                create_coop_habit_invite(new_habit.id, friendship_id, sender_id, receiver_id)
+                create_coop_habit_invite(new_habit.id, friendship_id, receiver_id, sender_id)
 
         return new_habit.id
 

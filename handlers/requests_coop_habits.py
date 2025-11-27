@@ -1,7 +1,7 @@
 from aiogram import F, Dispatcher, Router, Bot
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, BufferedInputFile, InputMediaPhoto
 from aiogram.fsm.context import FSMContext
-from keyboards.back_kb import back_kb
+from keyboards.back_kb import back_kb, get_inline_back_kb
 from keyboards.requests_coop_habits_kb import req_hab_kb, scroll_req_hab_kb
 from keyboards.all_requests_kb import all_requests_kb
 from models.requests_to_friendshabits import get_all_requests_in_habits, update_status_coop_habit
@@ -21,7 +21,7 @@ async def get_all_req_habits(message: Message, state: FSMContext):
     if not coop_habits:
         await message.answer('Запросов на привычки еще нет')
         return
-    await state.update_data(type="coop_habits", friends=coop_habits, index=0, key=coop_habits[0].id)
+    await state.update_data(type="coop_habits", coop_habits=coop_habits, index=0, key=coop_habits[0].id)
     current_coop_habit_name = get_name_habit_by_id(coop_habits[0].id)
     print(current_coop_habit_name)
     if len(coop_habits) == 1:
@@ -39,14 +39,14 @@ async def get_update_status_coop_habit(callback_query: CallbackQuery, state: FSM
         result = accept_coop_habit(key, callback_query.from_user.id)
         if result:
             habit_name = result.get('habit_name', 'Неизвестная привычка')
-            await callback_query.message.edit_text(f"Вы приняли приглашение на привычку '{habit_name}'!",  reply_markup=all_requests_kb())
+            await callback_query.message.edit_text(f"Вы приняли приглашение на привычку '{habit_name}'!")
         else:
             await callback_query.answer('Ошибка при принятии приглашения')
     else:
         result = reject_coop_habit(key)
         await callback_query.message.edit_text(
             "Вы отклонили приглашение на привычку",
-            reply_markup=all_requests_kb()
+            reply_markup=get_inline_back_kb()
         )
     await callback_query.answer()
 

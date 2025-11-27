@@ -184,18 +184,11 @@ async def process_confirmation(message: Message, state: FSMContext):
         )
 
         if data.get('habit_type') == 'cooperative' and data.get('friend_id'):
-            rec_id = get_user_id_by_tg_id(data.get('receiver_id'))
-            create_coop_habit_invite(habit_id, data.get('friend_id'), rec_id, data.get('my_id'))
 
             await message.answer(
-                f"✅ Приглашение на совместную привычку отправлено {data.get('friend_name')}!",
-                reply_markup=main_menu_kb()
-            )
-        else:
-            await message.answer(
-                f"Привычка \"{data.get('habit_name')}\" успешно создана!",
-                reply_markup=main_menu_kb()
-            )
+                        f"✅ Приглашение на совместную привычку отправлено {data.get('friend_name')}!",
+                        reply_markup=main_menu_kb()
+                    )
 
         awarded_achievements = EarnAchievement.check_habit_achievements(message.from_user.id)
 
