@@ -170,18 +170,29 @@ async def process_confirmation(message: Message, state: FSMContext):
     data = await state.get_data()
 
     if message.text == "Все правильно":
+        print(data.get('receiver_id'))
 
-
-        habit_id = create_new_habit(
-            message.from_user.id,
-            data.get('my_id'),
-            get_user_id_by_tg_id(data.get('receiver_id')),
-            data.get('habit_name'),
-            data.get('duration_days'),
-            data.get('notification'),
-            data.get('habit_type'),
-            data.get('friend_id')
-        )
+        if data.get('habit_type') == 'cooperative' and data.get('friend_id'):
+            habit_id = create_new_habit(
+                message.from_user.id,
+                data.get('my_id'),
+                get_user_id_by_tg_id(data.get('receiver_id')),
+                data.get('habit_name'),
+                data.get('duration_days'),
+                data.get('notification'),
+                data.get('habit_type'),
+                data.get('friend_id')
+            )
+        else:
+            habit_id = create_new_habit(
+                message.from_user.id,
+                data.get('my_id'),
+                None,
+                data.get('habit_name'),
+                data.get('duration_days'),
+                data.get('notification'),
+                data.get('habit_type'),
+                data.get('friend_id'))
 
         if data.get('habit_type') == 'cooperative' and data.get('friend_id'):
 
