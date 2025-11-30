@@ -1,7 +1,7 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.create_db import Achievements
+from create_db.create_db import Achievements
 
 db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'buildyourself.db'))
 

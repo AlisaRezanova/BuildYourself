@@ -3,93 +3,81 @@ from aiogram import Bot
 from decouple import config
 from sqlalchemy import create_engine, or_, and_, delete
 from sqlalchemy.orm import sessionmaker
-from models.create_db import Friends, User
-from models.exceptions import FriendsNotAdded, FriendsNotFoundError
+from create_db.create_db import Friends, User
+from models.exceptions import FriendsNotAdded
 from datetime import date
 from models.requests_to_users import get_user_id_by_tg_id
-
-
-db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'buildyourself.db'))
-
-engine = create_engine(f'sqlite:///{db_path}')
-Session = sessionmaker(bind=engine)
+from .session import session
 
 
 def get_all_friends_by_user_id(tg_id: int) -> list:
-    with Session() as session:
-        user_id = get_user_id_by_tg_id(tg_id)
-        friends = session.query(Friends).filter(or_(Friends.fr1_id==user_id, Friends.fr2_id==user_id)).filter(Friends.status=='accept').all()
-        friends = list(set(friends))
-        return friends
+    user_id = get_user_id_by_tg_id(tg_id)
+    friends = session.query(Friends).filter(or_(Friends.fr1_id==user_id, Friends.fr2_id==user_id)).filter(Friends.status=='accept').all()
+    friends = list(set(friends))
+    return friends
 
 
 def add_note_friends(tg_id: int, invite_code: str) -> bool:
-    with Session() as session:
-        user_id = get_user_id_by_tg_id(tg_id)
-        new_friends = Friends(
-            invite_code=invite_code,
-            fr1_id = user_id
-        )
-        try:
-            session.add(new_friends)
-            session.commit()
-            return True
-        except Exception:
-            raise FriendsNotAdded('friends not added')
+    user_id = get_user_id_by_tg_id(tg_id)
+    new_friends = Friends(
+        invite_code=invite_code,
+        fr1_id = user_id
+    )
+    try:
+        session.add(new_friends)
+        session.commit()
+        return True
+    except Exception:
+        raise FriendsNotAdded('friends not added')
 
 
 def update_friends2(tg_id: int, invite_code) -> bool:
-    with Session() as session:
-        user_id = get_user_id_by_tg_id(tg_id)
-        friends = session.query(Friends).filter(and_(Friends.invite_code == invite_code, Friends.fr2_id.is_(None))).first()
-        if friends:
-            friends.fr2_id = user_id
-            friends.start_friendship = date.today()
-            session.commit()
-            return True
-        else:
-            return False
+    user_id = get_user_id_by_tg_id(tg_id)
+    friends = session.query(Friends).filter(and_(Friends.invite_code == invite_code, Friends.fr2_id.is_(None))).first()
+    if friends:
+        friends.fr2_id = user_id
+        friends.start_friendship = date.today()
+        session.commit()
+        return True
+    else:
+        return False
 
 
 
 def check_eq_invite_code(invite_code: str):
     from handlers.friends import generate_invite_code
-    with Session() as session:
-        friends = session.query(Friends).all()
-        codes = [fr.invite_code for fr in friends]
-        if invite_code in codes:
-            generate_invite_code()
-        else:
-            return invite_code
+    friends = session.query(Friends).all()
+    codes = [fr.invite_code for fr in friends]
+    if invite_code in codes:
+        generate_invite_code()
+    else:
+        return invite_code
 
 
 def update_fr_status(status: str, fr_id: int) -> bool:
-    with Session() as session:
-        friend = session.query(Friends).filter(Friends.id == fr_id).first()
-        if friend:
-            friend.status = status
-            session.commit()
-            return True
-        else:
-            return False
+    friend = session.query(Friends).filter(Friends.id == fr_id).first()
+    if friend:
+        friend.status = status
+        session.commit()
+        return True
+    else:
+        return False
 
 
 def get_all_requests(tg_id: int) -> list:
-    with Session() as session:
-        user_id = get_user_id_by_tg_id(tg_id)
-        requests = session.query(Friends).filter(Friends.fr1_id == user_id).filter(Friends.status == 'Waiting').filter(Friends.fr2_id != None).all()
-        return requests
+    user_id = get_user_id_by_tg_id(tg_id)
+    requests = session.query(Friends).filter(Friends.fr1_id == user_id).filter(Friends.status == 'Waiting').filter(Friends.fr2_id != None).all()
+    return requests
 
 
 def delete_friend_by_id(fr_id: int):
-    with Session() as session:
-        try:
-            stmt = (delete(Friends).where(Friends.id == fr_id))
-            session.execute(
-                stmt)
-            session.commit()
-        except:
-            raise ValueError('Error')
+    try:
+        stmt = (delete(Friends).where(Friends.id == fr_id))
+        session.execute(
+            stmt)
+        session.commit()
+    except:
+        raise ValueError('Error')
 
 
 
@@ -114,7 +102,6 @@ async def get_friend_name_by_tg_id(tg_id):
 
 
 async def get_friends_list_with_names(user_tg_id):
-    session = Session()
     try:
 
         user = session.query(User).filter(User.tg_id == user_tg_id).first()
@@ -166,9 +153,8 @@ async def get_friends_list_with_names(user_tg_id):
         session.close()
 
 def get_friendship_by_id(friendship_id):
-    with Session() as session:
-        friendship = session.query(Friends).filter(Friends.id == friendship_id).first()
-        return friendship
+    friendship = session.query(Friends).filter(Friends.id == friendship_id).first()
+    return friendship
 
 
 

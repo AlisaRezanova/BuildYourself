@@ -1,7 +1,7 @@
 import os
 from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import sessionmaker
-from models.create_db import User, Habits, LogOfHabits, Achievements, LogOfAch, Friends
+from create_db.create_db import User, Habits, LogOfHabits, Achievements, LogOfAch, Friends
 from datetime import date
 import string, random
 

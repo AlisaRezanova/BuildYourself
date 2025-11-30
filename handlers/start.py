@@ -1,10 +1,10 @@
-from aiogram import F, Bot, Dispatcher, Router
+from aiogram import F, Router
 from aiogram.filters import Command
-from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
+from aiogram.types import Message
 from keyboards.start_kb import start_kb
 from keyboards.main_menu_kb import main_menu_kb
 from models.session_local import Session
-from models.create_db import *
+from create_db.create_db import *
 
 
 router = Router()

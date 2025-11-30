@@ -48,7 +48,7 @@ async def get_stat_by_range(callback_query: CallbackQuery, state: FSMContext):
     if callback_query.data == 'Прогресс за неделю':
         buf = get_progress_by_week(habit_id)
     elif callback_query.data == 'Прогресс за месяц':
-        buf = get_progress_by_month(habit_id)
+        buf = get_progress_by_month( habit_id)
     elif callback_query.data == 'Прогресс за полгода':
         buf = get_progress_by_half_year(habit_id)
     elif callback_query.data == 'Прогресс за год':
