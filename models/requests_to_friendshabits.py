@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from create_db.create_db import Habits, FriendsHabits, User, Friends
 from .requests_to_friends import get_all_friends_by_user_id
 from .requests_to_users import get_user_id_by_tg_id
+from models.requests_to_log_habits import get_habit_marks_count
 from .session import session
 
 
@@ -160,7 +161,7 @@ def get_coop_progress(habit_id, user_tg_id):
     if not friend_habit:
         return None
 
-    from models.requests_to_log_habits import get_habit_marks_count
+
     user_marks = get_habit_marks_count(habit_id)
     friend_marks = get_habit_marks_count(friend_habit.id)
 
@@ -175,11 +176,7 @@ def get_coop_progress(habit_id, user_tg_id):
     from models.requests_to_friends import get_friend_name_by_tg_id
     import asyncio
 
-    try:
-        friend_name = asyncio.run(get_friend_name_by_tg_id(friend_user.tg_id))
-    except:
-        friend_name = f"User_{friend_user.tg_id}"
-
+    friend_name = "Друг"
     days_remaining = max(0, habit.day_len - max(user_marks, friend_marks))
 
     return {

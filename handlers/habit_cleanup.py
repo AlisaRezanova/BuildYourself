@@ -65,7 +65,7 @@ class HabitCleanupService:
         self.is_running = True
         while self.is_running:
             now = datetime.now()
-            target_time = time(11, 49)  # Время проверки
+            target_time = time(10, 00)  # Время проверки
 
             next_run = datetime.combine(now.date(), target_time)
             if now >= next_run:

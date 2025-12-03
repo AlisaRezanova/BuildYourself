@@ -81,7 +81,20 @@ async def show_coop_progress(callback_query: CallbackQuery, state: FSMContext):
         f"До конца челленджа: {progress_info['days_remaining']} дней "
     )
 
-    await callback_query.message.answer(progress_message)
+    progress_message_id = data.get('progress_message_id')
+    if progress_message_id:
+        try:
+            await callback_query.bot.edit_message_text(
+                chat_id=callback_query.message.chat.id,
+                message_id=progress_message_id,
+                text=progress_message
+            )
+            await callback_query.answer()
+            return
+        except:
+            pass
+    sent_message = await callback_query.message.answer(progress_message)
+    await state.update_data(progress_message_id=sent_message.message_id)
     await callback_query.answer()
 
 

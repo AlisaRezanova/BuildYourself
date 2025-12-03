@@ -36,7 +36,7 @@ class NotificationService:
         while self.is_running:
             try:
                 now = datetime.now()
-                target_time = time(10, 28)  # натсройка времени
+                target_time = time(9, 59)  # натсройка времени
 
                 next_run = datetime.combine(now.date(), target_time)
                 if now >= next_run:
