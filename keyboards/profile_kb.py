@@ -9,5 +9,5 @@ def profile_kb() -> ReplyKeyboardMarkup:
     kb.button(text="Мои друзья")
     kb.button(text="Запросы")
     kb.button(text="Главное меню")
-    kb.adjust(5)
+    kb.adjust(3)
     return kb.as_markup(resize_keyboard=True)

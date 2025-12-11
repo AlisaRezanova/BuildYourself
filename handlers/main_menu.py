@@ -1,5 +1,5 @@
-from aiogram import F, Dispatcher, Router
-from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
+from aiogram import F, Router
+from aiogram.types import Message, CallbackQuery, FSInputFile
 from keyboards.main_menu_kb import main_menu_kb
 from aiogram.fsm.context import FSMContext
 
@@ -8,9 +8,11 @@ router = Router()
 
 
 @router.message(F.text == 'Главное меню')
-async def get_main_menu(message:Message, state: FSMContext):
+async def get_main_menu(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer('...', reply_markup=main_menu_kb())
+    photo = FSInputFile("img/main_menu.png")
+    await message.answer_photo(photo, caption="Главное меню", reply_markup=main_menu_kb())
+
 
 
 @router.callback_query(F.data == 'main menu')

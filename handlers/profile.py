@@ -1,5 +1,5 @@
 from aiogram import F, Dispatcher, Router
-from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, BufferedInputFile, InputMediaPhoto
+from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery, BufferedInputFile, InputMediaPhoto, FSInputFile
 from aiogram.fsm.context import FSMContext
 from keyboards.profile_kb import profile_kb
 from keyboards.statistic_kb import statistic_kb, get_stat_kb
@@ -15,7 +15,13 @@ router = Router()
 
 @router.message(F.text == 'Мой профиль')
 async def get_profile(message: Message):
-    await message.answer('Некоторая информация о профиле...', reply_markup=profile_kb())
+    photo = FSInputFile("img/profile.png")
+
+    await message.answer_photo(
+        photo,
+        caption="Мой профиль",
+        reply_markup=profile_kb()
+    )
 
 
 @router.message(F.text == 'Статистика и прогресс')
