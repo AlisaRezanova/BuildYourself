@@ -8,5 +8,5 @@ def my_friends_kb() -> ReplyKeyboardMarkup:
     kb.button(text="Сгенерировать личный код для присоединения")
     kb.button(text="Добавить друга")
     kb.button(text="Главное меню")
-    kb.adjust(4)
+    kb.adjust(2)
     return kb.as_markup(resize_keyboard=True)
