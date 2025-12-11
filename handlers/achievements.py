@@ -61,6 +61,9 @@ async def close_description(callback_query: CallbackQuery, state: FSMContext):
     if data.get('is_admin'):
         kb = scroll_ach_in_admin_kb
     else:
-        kb = scroll_ach_kb
+        if data.get('achievements'):
+            kb = scroll_ach_kb
+        else:
+            kb = about_achievement_kb
     msg = await callback_query.message.answer(text=current_ach.name, reply_markup=kb())
-    await state.update_data(msg_id=msg.message_id)
+    await state.update_data(msg_id=msg.message_id, type='achievements')
