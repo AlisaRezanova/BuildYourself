@@ -18,7 +18,7 @@ router = Router()
 
 @router.message(F.text=='Мои друзья')
 async def get_my_friends(message: Message):
-    await message.answer('...', reply_markup=my_friends_kb())
+    await message.answer('Выберите действие', reply_markup=my_friends_kb())
 
 
 @router.message(F.text=='Просмотр друзей')

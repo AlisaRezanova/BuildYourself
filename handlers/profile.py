@@ -26,7 +26,7 @@ async def get_profile(message: Message):
 
 @router.message(F.text == 'Статистика и прогресс')
 async def get_statistic(message: Message):
-    await message.answer('...', reply_markup=statistic_kb())
+    await message.answer('Выберите действие', reply_markup=statistic_kb())
 
 
 @router.message(F.text == 'Выбрать привычку')
