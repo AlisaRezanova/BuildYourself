@@ -22,7 +22,8 @@ async def get_all_req_habits(message: Message, state: FSMContext):
         await message.answer('Запросов на привычки еще нет')
         return
     await state.update_data(type="coop_habits", coop_habits=coop_habits, index=0, key=coop_habits[0].id)
-    current_coop_habit_name = get_name_habit_by_id(coop_habits[0].id)
+    current_coop_habit_name = get_name_habit_by_id(coop_habits[0].habit_id)
+    print(coop_habits[0].habit_id)
     print(current_coop_habit_name)
     if len(coop_habits) == 1:
 

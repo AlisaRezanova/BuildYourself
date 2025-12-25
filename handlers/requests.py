@@ -8,4 +8,4 @@ router = Router()
 
 @router.message(F.text=='Запросы')
 async def get_all_requests(message: Message):
-    await message.answer('...', reply_markup=all_requests_kb())
+    await message.answer('Выберите действие', reply_markup=all_requests_kb())
